@@ -48,7 +48,7 @@ const setFilter = (filterId: string) => {
           'whitespace-nowrap px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors',
           activeFilter === filter.id
             ? 'bg-primary/20 text-primary border-primary/20 hover:bg-primary/30'
-            : 'bg-surface-highlight text-text-secondary border-transparent hover:text-white hover:bg-[#2c5e2c]'
+            : 'bg-surface-highlight text-text-secondary border-transparent hover:text-white hover:bg-[#3a3a3a]'
         ]"
         @click="setFilter(filter.id)"
       >

@@ -186,7 +186,7 @@ const formatTimeAgo = (date: Date) => {
         
         <div class="overflow-x-auto">
           <table class="w-full text-left">
-            <thead class="bg-[#1a351a]">
+            <thead class="bg-[#1a1a1a]">
               <tr>
                 <th class="px-6 py-3 text-xs font-semibold text-text-secondary uppercase">Client</th>
                 <th class="px-6 py-3 text-xs font-semibold text-text-secondary uppercase">Virtual IP</th>

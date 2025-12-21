@@ -183,7 +183,7 @@ function closeModal() {
           <!-- Footer -->
           <div class="flex gap-3 p-5 border-t border-surface-highlight">
             <button
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-surface-highlight hover:bg-[#2c5e2c] text-white rounded-xl text-sm font-medium transition-colors"
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-surface-highlight hover:bg-[#3a3a3a] text-white rounded-xl text-sm font-medium transition-colors"
               @click="closeModal"
             >
               Close

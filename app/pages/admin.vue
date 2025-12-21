@@ -151,7 +151,7 @@ async function handleDeleteUser(username: string) {
     <!-- Users Table -->
     <div v-else class="glass-panel rounded-xl overflow-hidden">
       <table class="w-full text-left">
-        <thead class="border-b border-surface-highlight bg-[#1a351a]">
+        <thead class="border-b border-surface-highlight bg-[#1a1a1a]">
           <tr>
             <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase">Username</th>
             <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase">Role</th>

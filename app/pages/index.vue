@@ -271,7 +271,7 @@ const memoryUsage = computed(() => {
       </div>
       <div class="flex gap-2">
         <button
-          class="flex items-center gap-2 px-4 py-2 bg-surface-highlight hover:bg-[#2c5e2c] text-white rounded-lg text-sm font-medium transition-colors"
+          class="flex items-center gap-2 px-4 py-2 bg-surface-highlight hover:bg-[#3a3a3a] text-white rounded-lg text-sm font-medium transition-colors"
           @click="handleExport"
         >
           <span class="material-symbols-outlined text-[18px]">download</span>

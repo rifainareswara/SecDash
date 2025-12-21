@@ -130,7 +130,7 @@ const getMethodColor = (method: string) => {
         </label>
         <button
           @click="fetchLogs"
-          class="flex items-center gap-2 px-3 py-2 bg-surface-highlight hover:bg-[#2c5e2c] text-white rounded-lg text-sm transition-colors"
+          class="flex items-center gap-2 px-3 py-2 bg-surface-highlight hover:bg-[#3a3a3a] text-white rounded-lg text-sm transition-colors"
         >
           <span class="material-symbols-outlined text-[18px]">refresh</span>
         </button>
@@ -182,7 +182,7 @@ const getMethodColor = (method: string) => {
     <div v-else class="glass-panel rounded-xl overflow-hidden">
       <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
         <table class="w-full text-left text-sm">
-          <thead class="bg-[#1a351a] sticky top-0">
+          <thead class="bg-[#1a1a1a] sticky top-0">
             <tr>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Time</th>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">IP Address</th>

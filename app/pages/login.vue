@@ -110,7 +110,7 @@ const handleSubmit = async () => {
 
 /* Fix input text visibility */
 input {
-  background-color: #1a2f1a !important;
+  background-color: #1a1a1a !important;
   color: #ffffff !important;
   caret-color: #06f906 !important;
 }
@@ -123,7 +123,7 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus {
   -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0px 1000px #1a2f1a inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 </style>

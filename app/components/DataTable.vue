@@ -137,7 +137,7 @@ const getHandshakeTextClass = (status: string) => {
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="border-b border-surface-highlight bg-[#1a351a]">
+          <tr class="border-b border-surface-highlight bg-[#1a1a1a]">
             <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">
               Client / User
             </th>
@@ -274,7 +274,7 @@ const getHandshakeTextClass = (status: string) => {
                       :style="getDropdownPosition(client.id)"
                       @click.stop
                     >
-                      <div class="w-48 bg-[#1a2f1a] border border-surface-highlight rounded-xl shadow-2xl overflow-hidden">
+                      <div class="w-48 bg-[#1a1a1a] border border-surface-highlight rounded-xl shadow-2xl overflow-hidden">
                         <button
                           class="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-surface-highlight transition-colors"
                           @click="handleAction('qr', client, $event)"
