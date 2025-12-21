@@ -72,7 +72,7 @@ onMounted(() => {
           <span class="material-symbols-outlined text-[40px] text-blue-400">vpn_lock</span>
         </div>
         <h1 class="text-3xl font-bold gradient-text">SecDash</h1>
-        <p class="text-slate-400 text-sm mt-2">WireGuard VPN Management</p>
+        <p class="text-slate-400 text-sm mt-2">Security Dashboard Management</p>
       </div>
 
       <!-- Login Form with glass effect -->
@@ -151,8 +151,8 @@ onMounted(() => {
 
       <!-- Footer -->
       <div class="text-center mt-8 space-y-2">
-        <p class="text-slate-500 text-xs">
-          Default credentials: <span class="text-blue-400 font-mono">admin</span> / <span class="text-blue-400 font-mono">password</span>
+        <p class="text-slate-500 text-sm flex items-center justify-center gap-1">
+          made with <span class="text-red-500">❤️</span> by <span class="text-blue-400 font-medium">rifai</span>
         </p>
         <p class="text-slate-600 text-xs flex items-center justify-center gap-1">
           <span class="material-symbols-outlined text-[14px]">shield</span>
