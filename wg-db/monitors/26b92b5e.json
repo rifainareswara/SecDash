@@ -1,0 +1,23 @@
+{
+  "id": "26b92b5e",
+  "name": "Indonesia.travel",
+  "url": "https://www.indonesia.travel",
+  "type": "http",
+  "method": "GET",
+  "interval": 60,
+  "timeout": 10,
+  "retries": 3,
+  "enabled": true,
+  "created_at": "2025-12-21T07:24:38.295Z",
+  "updated_at": "2025-12-21T07:24:51.361Z",
+  "stats": {
+    "monitor_id": "26b92b5e",
+    "uptime_24h": 100,
+    "uptime_7d": 100,
+    "uptime_30d": 100,
+    "avg_response_time": 0,
+    "last_check": null,
+    "current_status": "unknown"
+  },
+  "recentLogs": []
+}

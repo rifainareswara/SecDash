@@ -622,3 +622,229 @@ export function updateClient(id: string, updates: Partial<WGClient>): WGClient |
 }
 
 
+// ==========================================
+// Uptime Monitor Management
+// ==========================================
+
+export interface UptimeMonitor {
+    id: string
+    name: string
+    url: string
+    type: 'http' | 'ping' | 'port'
+    method?: string          // GET, POST, etc for http
+    port?: number            // for port check
+    interval: number         // seconds
+    timeout: number          // seconds
+    retries: number
+    enabled: boolean
+    created_at: string
+    updated_at: string
+}
+
+export interface UptimeLog {
+    id: string
+    monitor_id: string
+    timestamp: string
+    status: 'up' | 'down'
+    response_time: number    // ms
+    status_code?: number     // for HTTP
+    error?: string
+}
+
+export interface UptimeStats {
+    monitor_id: string
+    uptime_24h: number       // percentage
+    uptime_7d: number        // percentage
+    uptime_30d: number       // percentage
+    avg_response_time: number
+    last_check: string | null
+    current_status: 'up' | 'down' | 'unknown'
+}
+
+const MONITORS_DIR = join(DB_PATH, 'monitors')
+const UPTIME_LOGS_DIR = join(DB_PATH, 'uptime_logs')
+const MAX_LOGS_PER_MONITOR = 1440 // 24 hours at 1 min interval
+
+function ensureMonitorDirs() {
+    if (!existsSync(MONITORS_DIR)) {
+        mkdirSync(MONITORS_DIR, { recursive: true })
+    }
+    if (!existsSync(UPTIME_LOGS_DIR)) {
+        mkdirSync(UPTIME_LOGS_DIR, { recursive: true })
+    }
+}
+
+export function getMonitors(): UptimeMonitor[] {
+    ensureMonitorDirs()
+
+    try {
+        const files = readdirSync(MONITORS_DIR).filter(f => f.endsWith('.json'))
+        const monitors: UptimeMonitor[] = []
+
+        for (const file of files) {
+            const filePath = join(MONITORS_DIR, file)
+            const monitor = readJsonFile<UptimeMonitor>(filePath)
+            if (monitor) {
+                monitors.push({
+                    ...monitor,
+                    id: monitor.id || file.replace('.json', '')
+                })
+            }
+        }
+
+        return monitors.sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+    } catch (error) {
+        console.error('Error reading monitors:', error)
+        return []
+    }
+}
+
+export function getMonitorById(id: string): UptimeMonitor | null {
+    ensureMonitorDirs()
+    const filePath = join(MONITORS_DIR, `${id}.json`)
+    return readJsonFile<UptimeMonitor>(filePath)
+}
+
+export function createMonitor(data: Omit<UptimeMonitor, 'id' | 'created_at' | 'updated_at'>): UptimeMonitor {
+    ensureMonitorDirs()
+
+    const id = createHash('md5').update(randomBytes(16)).digest('hex').substring(0, 8)
+    const now = new Date().toISOString()
+
+    const monitor: UptimeMonitor = {
+        id,
+        name: data.name,
+        url: data.url,
+        type: data.type || 'http',
+        method: data.method || 'GET',
+        port: data.port,
+        interval: data.interval || 60,
+        timeout: data.timeout || 10,
+        retries: data.retries || 3,
+        enabled: data.enabled !== false,
+        created_at: now,
+        updated_at: now
+    }
+
+    const filePath = join(MONITORS_DIR, `${id}.json`)
+    writeJsonFile(filePath, monitor)
+    return monitor
+}
+
+export function updateMonitor(id: string, updates: Partial<UptimeMonitor>): UptimeMonitor | null {
+    const filePath = join(MONITORS_DIR, `${id}.json`)
+    const monitor = readJsonFile<UptimeMonitor>(filePath)
+
+    if (!monitor) return null
+
+    const updatedMonitor: UptimeMonitor = {
+        ...monitor,
+        ...updates,
+        id, // Ensure ID doesn't change
+        updated_at: new Date().toISOString()
+    }
+
+    if (writeJsonFile(filePath, updatedMonitor)) {
+        return updatedMonitor
+    }
+    return null
+}
+
+export function deleteMonitor(id: string): boolean {
+    const filePath = join(MONITORS_DIR, `${id}.json`)
+    const logsFile = join(UPTIME_LOGS_DIR, `${id}.json`)
+
+    try {
+        if (existsSync(filePath)) {
+            unlinkSync(filePath)
+        }
+        // Also delete logs
+        if (existsSync(logsFile)) {
+            unlinkSync(logsFile)
+        }
+        return true
+    } catch (error) {
+        console.error('Error deleting monitor:', error)
+        return false
+    }
+}
+
+export function addUptimeLog(monitorId: string, result: Omit<UptimeLog, 'id' | 'monitor_id' | 'timestamp'>): void {
+    ensureMonitorDirs()
+
+    const logsFile = join(UPTIME_LOGS_DIR, `${monitorId}.json`)
+    let logs: UptimeLog[] = readJsonFile<UptimeLog[]>(logsFile) || []
+
+    const log: UptimeLog = {
+        id: Date.now().toString(36),
+        monitor_id: monitorId,
+        timestamp: new Date().toISOString(),
+        status: result.status,
+        response_time: result.response_time,
+        status_code: result.status_code,
+        error: result.error
+    }
+
+    logs.unshift(log)
+
+    // Keep only last MAX_LOGS_PER_MONITOR
+    if (logs.length > MAX_LOGS_PER_MONITOR) {
+        logs = logs.slice(0, MAX_LOGS_PER_MONITOR)
+    }
+
+    writeJsonFile(logsFile, logs)
+}
+
+export function getUptimeLogs(monitorId: string, limit: number = 100): UptimeLog[] {
+    const logsFile = join(UPTIME_LOGS_DIR, `${monitorId}.json`)
+    const logs = readJsonFile<UptimeLog[]>(logsFile) || []
+    return logs.slice(0, limit)
+}
+
+export function getUptimeStats(monitorId: string): UptimeStats {
+    const logs = getUptimeLogs(monitorId, MAX_LOGS_PER_MONITOR)
+    const now = Date.now()
+
+    const stats: UptimeStats = {
+        monitor_id: monitorId,
+        uptime_24h: 100,
+        uptime_7d: 100,
+        uptime_30d: 100,
+        avg_response_time: 0,
+        last_check: logs[0]?.timestamp || null,
+        current_status: logs[0]?.status || 'unknown'
+    }
+
+    if (logs.length === 0) return stats
+
+    // Calculate uptimes
+    const MS_24H = 24 * 60 * 60 * 1000
+    const MS_7D = 7 * MS_24H
+    const MS_30D = 30 * MS_24H
+
+    const logs24h = logs.filter(l => now - new Date(l.timestamp).getTime() < MS_24H)
+    const logs7d = logs.filter(l => now - new Date(l.timestamp).getTime() < MS_7D)
+    const logs30d = logs.filter(l => now - new Date(l.timestamp).getTime() < MS_30D)
+
+    if (logs24h.length > 0) {
+        stats.uptime_24h = Math.round((logs24h.filter(l => l.status === 'up').length / logs24h.length) * 100)
+    }
+    if (logs7d.length > 0) {
+        stats.uptime_7d = Math.round((logs7d.filter(l => l.status === 'up').length / logs7d.length) * 100)
+    }
+    if (logs30d.length > 0) {
+        stats.uptime_30d = Math.round((logs30d.filter(l => l.status === 'up').length / logs30d.length) * 100)
+    }
+
+    // Calculate average response time (only from successful checks)
+    const successfulLogs = logs24h.filter(l => l.status === 'up' && l.response_time > 0)
+    if (successfulLogs.length > 0) {
+        stats.avg_response_time = Math.round(
+            successfulLogs.reduce((sum, l) => sum + l.response_time, 0) / successfulLogs.length
+        )
+    }
+
+    return stats
+}

@@ -15,6 +15,7 @@ const navItems = [
   { icon: 'dns', label: 'WireGuard Server', href: '/config' },
   { icon: 'group', label: 'WireGuard Clients', href: '/users' },
   { icon: 'shield', label: 'Access Control', href: '/access-control' },
+  { icon: 'speed', label: 'Uptime Monitor', href: '/uptime' },
   { icon: 'settings_input_component', label: 'VPN Connections', href: '/vpn-monitor' },
   { icon: 'monitoring', label: 'Status', href: '/status' },
   { icon: 'history', label: 'Access Logs', href: '/logs' },
