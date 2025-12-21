@@ -203,7 +203,8 @@ PostDown = ${postDown}
 
 ${peersConfig.join('\n')}
 `
-            const configPath = '/config/wg_confs/wg0.conf'
+            // Write to the correct path for linuxserver/wireguard container
+            const configPath = '/config/wg0.conf'
             await fs.promises.mkdir(path.dirname(configPath), { recursive: true })
             await fs.promises.writeFile(configPath, wgConfigContent)
             console.log(`✅ Config Saved: Wrote full configuration to ${configPath}`)
@@ -240,6 +241,7 @@ ${peersConfig.join('\n')}
 /**
  * Convert address format to proper server address
  * e.g., "10.252.1.0/24" -> "10.252.1.1"
+ *       "10.252.1.0"    -> "10.252.1.1"
  */
 function getServerAddress(addresses: string[]): string {
     if (!addresses || addresses.length === 0) {
@@ -248,18 +250,21 @@ function getServerAddress(addresses: string[]): string {
 
     const addr = addresses[0]
 
-    // If already looks like a server address (ends with .1), use as-is
-    if (addr.match(/\.\d+$/)) {
-        const parts = addr.replace(/\/\d+$/, '').split('.')
-        if (parts.length === 4) {
-            // Check if last octet is 0 (network address), change to 1
-            if (parts[3] === '0') {
-                parts[3] = '1'
-            }
-            return parts.join('.')
-        }
+    // Remove CIDR notation if present
+    const ipOnly = addr.replace(/\/\d+$/, '')
+
+    // Split into octets
+    const parts = ipOnly.split('.')
+
+    if (parts.length !== 4) {
+        return '10.252.1.1'
     }
 
-    // Default fallback
-    return '10.252.1.1'
+    // If last octet is 0 (network address), change to 1 (server address)
+    if (parts[3] === '0') {
+        parts[3] = '1'
+    }
+
+    return parts.join('.')
 }
+
