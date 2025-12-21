@@ -78,13 +78,15 @@ export default defineEventHandler(async () => {
         }
 
         // Prepare global values with proper defaults
-        const endpointAddress = hasValue(globalSettings?.endpoint_address) ? globalSettings!.endpoint_address : detectedIP
+        const envHost = process.env.PUBLIC_HOST || process.env.SERVERURL || process.env.WG_HOST
+        const effectiveEndpoint = (envHost && envHost !== 'auto') ? envHost : detectedIP
+        const endpointAddress = hasValue(globalSettings?.endpoint_address) ? globalSettings!.endpoint_address : effectiveEndpoint
         const dnsServers = hasValidArrayValues(globalSettings?.dns_servers) ? globalSettings!.dns_servers : defaults.dns_servers
 
         // Auto-save defaults if first time
         if (!globalSettings || !hasValue(globalSettings?.endpoint_address)) {
             updateGlobalSettings({
-                endpoint_address: detectedIP,
+                endpoint_address: effectiveEndpoint,
                 dns_servers: defaults.dns_servers,
                 mtu: defaults.mtu,
                 persistent_keepalive: defaults.persistent_keepalive,
