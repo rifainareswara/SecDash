@@ -34,7 +34,7 @@ const setFilter = (filterId: string) => {
       <input
         v-model="searchQuery"
         type="text"
-        class="block w-full pl-10 pr-3 py-2.5 bg-[#102310] border border-transparent focus:border-primary/50 text-white rounded-lg placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary/50 sm:text-sm transition-all"
+        class="block w-full pl-10 pr-3 py-2.5 bg-[#0d0d0d] border border-transparent focus:border-primary/50 text-white rounded-lg placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary/50 sm:text-sm transition-all"
         placeholder="Search client, IP, or public key..."
       />
     </div>

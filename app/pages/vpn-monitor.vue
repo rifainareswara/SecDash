@@ -73,7 +73,7 @@ function formatTime(timestamp: string): string {
 // Get event color
 function getEventColor(event: string): string {
     switch (event) {
-        case 'connect': return 'text-green-400'
+        case 'connect': return 'text-gray-400'
         case 'disconnect': return 'text-red-400'
         case 'traffic': return 'text-blue-400'
         case 'handshake': return 'text-yellow-400'
@@ -162,7 +162,7 @@ onUnmounted(() => {
                         </div>
                         <div class="flex justify-between">
                             <span class="text-text-secondary">Download:</span>
-                            <span class="text-green-400">↓ {{ formatBytes(client.transferRx) }}</span>
+                            <span class="text-gray-400">↓ {{ formatBytes(client.transferRx) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-text-secondary">Upload:</span>

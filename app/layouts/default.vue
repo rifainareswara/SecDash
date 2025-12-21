@@ -40,7 +40,7 @@ const closeSidebar = () => {
       <!-- Main Content Area -->
       <main class="flex-1 flex flex-col h-full overflow-hidden relative">
         <!-- Mobile Header -->
-        <div class="md:hidden flex items-center justify-between p-4 border-b border-surface-highlight bg-[#102310]">
+        <div class="md:hidden flex items-center justify-between p-4 border-b border-surface-highlight bg-[#0d0d0d]">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary">vpn_lock</span>
             <span class="font-bold text-white">WireGuard Admin</span>

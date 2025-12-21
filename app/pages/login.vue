@@ -26,7 +26,7 @@ const handleSubmit = async () => {
 <template>
   <div class="min-h-screen bg-[#0a1a0a] flex items-center justify-center p-4">
     <!-- Background gradient -->
-    <div class="fixed inset-0 bg-gradient-to-br from-green-900/20 via-transparent to-emerald-900/20"></div>
+    <div class="fixed inset-0 bg-gradient-to-br from-gray-900/20 via-transparent to-slate-900/20"></div>
     
     <div class="relative w-full max-w-md">
       <!-- Logo -->
@@ -86,7 +86,7 @@ const handleSubmit = async () => {
         <button
           type="submit"
           :disabled="isLoading || !form.username || !form.password"
-          class="w-full py-3 bg-primary hover:bg-green-400 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+          class="w-full py-3 bg-primary hover:bg-gray-400 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <span v-if="isLoading" class="material-symbols-outlined text-[20px] animate-spin">sync</span>
           <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>

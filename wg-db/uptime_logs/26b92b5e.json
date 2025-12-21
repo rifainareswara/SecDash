@@ -1,5 +1,77 @@
 [
   {
+    "id": "mjfi15p8",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T09:02:34.268Z",
+    "status": "up",
+    "response_time": 307,
+    "status_code": 200
+  },
+  {
+    "id": "mjfhzvhm",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T09:01:34.378Z",
+    "status": "up",
+    "response_time": 450,
+    "status_code": 200
+  },
+  {
+    "id": "mjfhyopo",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T09:00:38.940Z",
+    "status": "down",
+    "response_time": 5071,
+    "error": "fetch failed"
+  },
+  {
+    "id": "mjfhxaoh",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:59:34.097Z",
+    "status": "up",
+    "response_time": 274,
+    "status_code": 200
+  },
+  {
+    "id": "mjfhw0cm",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:58:34.054Z",
+    "status": "up",
+    "response_time": 275,
+    "status_code": 200
+  },
+  {
+    "id": "mjfhuq04",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:57:33.989Z",
+    "status": "up",
+    "response_time": 250,
+    "status_code": 200
+  },
+  {
+    "id": "mjfhtjd0",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:56:38.725Z",
+    "status": "up",
+    "response_time": 5037,
+    "status_code": 200
+  },
+  {
+    "id": "mjfhs90o",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:55:38.664Z",
+    "status": "down",
+    "response_time": 5041,
+    "error": "fetch failed"
+  },
+  {
+    "id": "mjfhqv1g",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:54:33.892Z",
+    "status": "up",
+    "response_time": 334,
+    "status_code": 200
+  },
+  {
     "id": "mjfhpobu",
     "monitor_id": "26b92b5e",
     "timestamp": "2025-12-21T08:53:38.538Z",

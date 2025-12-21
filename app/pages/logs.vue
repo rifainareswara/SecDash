@@ -101,7 +101,7 @@ const formatTime = (timestamp: string) => {
 // Method color
 const getMethodColor = (method: string) => {
   const colors: Record<string, string> = {
-    'GET': 'text-green-400 bg-green-500/20',
+    'GET': 'text-gray-400 bg-gray-500/20',
     'POST': 'text-blue-400 bg-blue-500/20',
     'PUT': 'text-yellow-400 bg-yellow-500/20',
     'PATCH': 'text-orange-400 bg-orange-500/20',
@@ -166,7 +166,7 @@ const getMethodColor = (method: string) => {
       <div class="glass-panel p-4 rounded-xl">
         <p class="text-text-secondary text-xs">Live Status</p>
         <div class="flex items-center gap-2">
-          <div class="size-2 rounded-full" :class="autoRefresh ? 'bg-green-400 animate-pulse' : 'bg-gray-500'"></div>
+          <div class="size-2 rounded-full" :class="autoRefresh ? 'bg-gray-400 animate-pulse' : 'bg-gray-500'"></div>
           <span class="text-white text-lg font-bold">{{ autoRefresh ? 'Live' : 'Paused' }}</span>
         </div>
       </div>

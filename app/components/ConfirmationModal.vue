@@ -72,7 +72,7 @@ const emit = defineEmits<{
                 'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg',
                 type === 'danger' 
                   ? 'bg-red-500 hover:bg-red-400 text-white shadow-red-500/20' 
-                  : 'bg-primary hover:bg-green-400 text-black shadow-primary/20'
+                  : 'bg-primary hover:bg-gray-400 text-black shadow-primary/20'
               ]"
               :disabled="loading"
               @click="emit('confirm')"

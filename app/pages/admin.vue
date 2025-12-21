@@ -127,7 +127,7 @@ async function handleDeleteUser(username: string) {
       </div>
       <div>
         <button
-          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-green-400 text-black rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(6,249,6,0.3)]"
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(160,160,160,0.3)]"
           @click="showAddModal = true"
         >
           <span class="material-symbols-outlined text-[18px]">person_add</span>
@@ -221,7 +221,7 @@ async function handleDeleteUser(username: string) {
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button @click="showAddModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-          <button @click="handleAddUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-green-400">Create Admin</button>
+          <button @click="handleAddUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Create Admin</button>
         </div>
       </div>
     </div>
@@ -242,7 +242,7 @@ async function handleDeleteUser(username: string) {
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button @click="showEditModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-          <button @click="handleEditUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-green-400">Save Changes</button>
+          <button @click="handleEditUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Save Changes</button>
         </div>
       </div>
     </div>

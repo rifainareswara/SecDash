@@ -1,16 +1,19 @@
 import type { Config } from 'tailwindcss'
 
 export default {
+    content: [],
     darkMode: 'class',
     theme: {
         extend: {
             colors: {
-                primary: '#06f906',
-                'background-light': '#f5f8f5',
-                'background-dark': '#0f230f',
-                'surface-dark': '#162e16',
-                'surface-highlight': '#214a21',
-                'text-secondary': '#8ecc8e',
+                primary: '#a0a0a0',
+                'primary-hover': '#c0c0c0',
+                'background-light': '#f5f5f5',
+                'background-dark': '#0d0d0d',
+                'surface-dark': '#1a1a1a',
+                'surface-highlight': '#2a2a2a',
+                'text-secondary': '#8a8a8a',
+                'accent': '#6b7280',
             },
             fontFamily: {
                 display: ['Inter', 'sans-serif'],

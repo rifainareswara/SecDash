@@ -63,7 +63,7 @@ const formatTimeAgo = (date: Date) => {
           Last updated: {{ formatTimeAgo(lastRefresh) }}
         </span>
         <button
-          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-green-400 text-black rounded-lg text-sm font-bold transition-colors"
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg text-sm font-bold transition-colors"
           @click="handleRefresh"
           :disabled="loading"
         >
@@ -92,8 +92,8 @@ const formatTimeAgo = (date: Date) => {
         <!-- Server Status -->
         <div class="glass-panel p-5 rounded-xl">
           <div class="flex items-center gap-3 mb-3">
-            <div class="size-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-              <span class="material-symbols-outlined text-green-400">dns</span>
+            <div class="size-10 rounded-lg bg-gray-500/20 flex items-center justify-center">
+              <span class="material-symbols-outlined text-gray-400">dns</span>
             </div>
             <div>
               <p class="text-text-secondary text-xs">Server Status</p>
@@ -101,8 +101,8 @@ const formatTimeAgo = (date: Date) => {
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="size-2 rounded-full bg-green-400 animate-pulse"></div>
-            <span class="text-xs text-green-400">Online</span>
+            <div class="size-2 rounded-full bg-gray-400 animate-pulse"></div>
+            <span class="text-xs text-gray-400">Online</span>
           </div>
         </div>
 
@@ -207,7 +207,7 @@ const formatTimeAgo = (date: Date) => {
                     <div 
                       class="size-8 rounded-full flex items-center justify-center text-xs font-bold"
                       :class="client.enabled 
-                        ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white' 
+                        ? 'bg-gradient-to-br from-gray-500 to-slate-600 text-white' 
                         : 'bg-gray-600 text-gray-300'"
                     >
                       {{ client.avatarInitials }}
@@ -228,8 +228,8 @@ const formatTimeAgo = (date: Date) => {
                     <div 
                       class="size-2 rounded-full"
                       :class="{
-                        'bg-green-400 animate-pulse': client.status === 'active',
-                        'bg-green-400': client.status === 'recent',
+                        'bg-gray-400 animate-pulse': client.status === 'active',
+                        'bg-gray-400': client.status === 'recent',
                         'bg-yellow-500': client.status === 'stale',
                         'bg-gray-500': client.status === 'offline'
                       }"
@@ -237,7 +237,7 @@ const formatTimeAgo = (date: Date) => {
                     <span 
                       class="text-xs capitalize"
                       :class="{
-                        'text-green-400': client.status === 'active' || client.status === 'recent',
+                        'text-gray-400': client.status === 'active' || client.status === 'recent',
                         'text-yellow-500': client.status === 'stale',
                         'text-gray-500': client.status === 'offline'
                       }"

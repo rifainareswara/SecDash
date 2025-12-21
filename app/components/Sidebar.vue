@@ -56,7 +56,7 @@ const userInitials = computed(() => {
 </script>
 
 <template>
-  <aside class="flex flex-col w-72 h-full border-r border-surface-highlight bg-[#102310]">
+  <aside class="flex flex-col w-72 h-full border-r border-surface-highlight bg-[#0d0d0d]">
     <!-- Logo -->
     <div class="p-6">
       <div class="flex items-center gap-3">
@@ -185,11 +185,11 @@ const userInitials = computed(() => {
     <!-- User Profile -->
     <div class="p-4 border-t border-surface-highlight">
       <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
-        <div class="relative size-10 rounded-full bg-cover bg-center bg-gradient-to-br from-green-500 to-emerald-600">
+        <div class="relative size-10 rounded-full bg-cover bg-center bg-gradient-to-br from-gray-500 to-slate-600">
           <div class="absolute inset-0 flex items-center justify-center text-white text-sm font-bold">
             {{ userInitials }}
           </div>
-          <div class="absolute bottom-0 right-0 size-2.5 rounded-full bg-primary border-2 border-[#102310]"></div>
+          <div class="absolute bottom-0 right-0 size-2.5 rounded-full bg-primary border-2 border-[#0d0d0d]"></div>
         </div>
         <div class="flex flex-col overflow-hidden flex-1">
           <p class="text-sm font-medium text-white truncate">{{ user?.username || 'Admin' }}</p>

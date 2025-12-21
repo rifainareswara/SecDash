@@ -128,7 +128,7 @@ const formatTime = (iso: string) => {
       </div>
       <button 
         @click="showAddModal = true"
-        class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-green-400 text-black rounded-lg text-sm font-bold transition-colors shadow-lg"
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg text-sm font-bold transition-colors shadow-lg"
       >
         <span class="material-symbols-outlined text-[18px]">add</span>
         Monitor Server
@@ -162,7 +162,7 @@ const formatTime = (iso: string) => {
     <div class="glass-panel rounded-xl overflow-hidden mt-8">
       <div class="p-4 border-b border-surface-highlight flex justify-between items-center">
         <h3 class="font-bold text-white flex items-center gap-2">
-          <span class="material-symbols-outlined text-green-400">monitor_heart</span>
+          <span class="material-symbols-outlined text-gray-400">monitor_heart</span>
           Real-time Traffic Logs
         </h3>
         <span class="text-xs text-text-secondary">Auto-refreshing...</span>
@@ -215,7 +215,7 @@ const formatTime = (iso: string) => {
             </div>
             <div class="flex justify-end gap-3 mt-6">
                 <button @click="showAddModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-                <button @click="addServer" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-green-400">Start Monitoring</button>
+                <button @click="addServer" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Start Monitoring</button>
             </div>
         </div>
     </div>

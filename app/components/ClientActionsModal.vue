@@ -148,7 +148,7 @@ function closeModal() {
               <span class="material-symbols-outlined text-4xl text-red-400">error</span>
               <p class="text-red-400 mt-3">{{ error }}</p>
               <button
-                class="mt-4 px-4 py-2 bg-primary text-black rounded-lg text-sm font-medium hover:bg-green-400 transition-colors"
+                class="mt-4 px-4 py-2 bg-primary text-black rounded-lg text-sm font-medium hover:bg-gray-400 transition-colors"
                 @click="fetchConfig"
               >
                 Retry
@@ -189,7 +189,7 @@ function closeModal() {
               Close
             </button>
             <button
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-green-400 text-black rounded-xl text-sm font-bold transition-colors shadow-[0_0_15px_rgba(6,249,6,0.3)]"
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-gray-400 text-black rounded-xl text-sm font-bold transition-colors shadow-[0_0_15px_rgba(160,160,160,0.3)]"
               :disabled="loading || !!error"
               @click="downloadConfig"
             >
