@@ -47,7 +47,7 @@ services:
       - COOKIE_SECURE=${COOKIE_SECURE:-false} 
     volumes:
       - ./wg-db:/app/wg-db
-      - ./config:/etc/wireguard:ro
+      - ./config:/config
     restart: unless-stopped
 
 # Note: wireguard-ui has been removed and replaced by our custom vpn-dashboard
