@@ -10,6 +10,17 @@ echo "   SecDash VPN - Deployment Script"
 echo "================================================"
 echo ""
 
+# Detect docker compose command (v1 vs v2)
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+elif docker compose version &> /dev/null; then
+    DOCKER_COMPOSE="docker compose"
+else
+    echo "❌ Docker Compose not found. Please install Docker Compose."
+    exit 1
+fi
+echo "📦 Using: $DOCKER_COMPOSE"
+
 # Get public IP
 if [ -n "$1" ]; then
     PUBLIC_IP="$1"
@@ -53,10 +64,10 @@ echo ""
 echo "🐳 Step 2: Building and starting containers..."
 
 # Stop existing containers
-docker-compose down 2>/dev/null || true
+$DOCKER_COMPOSE down 2>/dev/null || true
 
 # Build and start
-docker-compose up -d --build
+$DOCKER_COMPOSE up -d --build
 
 echo ""
 echo "⏳ Step 3: Waiting for services to be ready..."
@@ -104,7 +115,7 @@ echo "✅ Step 5: Verifying deployment..."
 
 # Check containers
 echo "   Checking containers..."
-docker-compose ps
+$DOCKER_COMPOSE ps
 
 # Check WireGuard
 echo ""
