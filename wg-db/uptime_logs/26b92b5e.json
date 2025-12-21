@@ -1,5 +1,69 @@
 [
   {
+    "id": "mjfhfa0a",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:45:33.418Z",
+    "status": "up",
+    "response_time": 311,
+    "status_code": 200
+  },
+  {
+    "id": "mjfhdznj",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:44:33.343Z",
+    "status": "up",
+    "response_time": 280,
+    "status_code": 200
+  },
+  {
+    "id": "mjfhcp6c",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T08:43:33.108Z",
+    "status": "down",
+    "response_time": 5094,
+    "error": "fetch failed"
+  },
+  {
+    "id": "mjfeq2mb",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T07:29:58.211Z",
+    "status": "up",
+    "response_time": 227,
+    "status_code": 200
+  },
+  {
+    "id": "mjfeosco",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T07:28:58.248Z",
+    "status": "up",
+    "response_time": 273,
+    "status_code": 200
+  },
+  {
+    "id": "mjfenad3",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T07:27:48.279Z",
+    "status": "up",
+    "response_time": 242,
+    "status_code": 200
+  },
+  {
+    "id": "mjfem028",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T07:26:48.272Z",
+    "status": "up",
+    "response_time": 243,
+    "status_code": 200
+  },
+  {
+    "id": "mjfekpr0",
+    "monitor_id": "26b92b5e",
+    "timestamp": "2025-12-21T07:25:48.252Z",
+    "status": "up",
+    "response_time": 233,
+    "status_code": 200
+  },
+  {
     "id": "mjfejfk8",
     "monitor_id": "26b92b5e",
     "timestamp": "2025-12-21T07:24:48.392Z",

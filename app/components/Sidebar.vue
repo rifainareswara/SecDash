@@ -10,21 +10,38 @@ const emit = defineEmits<{
 const route = useRoute()
 const { user, logout } = useAuth()
 
+// State for collapsible menus
+const wireGuardExpanded = ref(true)
+
+// Regular nav items (non-grouped)
 const navItems = [
   { icon: 'dashboard', label: 'Dashboard', href: '/' },
-  { icon: 'dns', label: 'WireGuard Server', href: '/config' },
-  { icon: 'group', label: 'WireGuard Clients', href: '/users' },
   { icon: 'shield', label: 'Access Control', href: '/access-control' },
   { icon: 'speed', label: 'Uptime Monitor', href: '/uptime' },
-  { icon: 'settings_input_component', label: 'VPN Connections', href: '/vpn-monitor' },
-  { icon: 'monitoring', label: 'Status', href: '/status' },
   { icon: 'history', label: 'Access Logs', href: '/logs' },
   { icon: 'admin_panel_settings', label: 'Admin Users', href: '/admin' },
   { icon: 'power_settings_new', label: 'WoL Hosts', href: '/wol' }
 ]
 
+// WireGuard sub-menu items
+const wireGuardItems = [
+  { icon: 'dns', label: 'Server Config', href: '/config' },
+  { icon: 'group', label: 'Clients', href: '/users' },
+  { icon: 'settings_input_component', label: 'Connections', href: '/vpn-monitor' },
+  { icon: 'monitoring', label: 'Status', href: '/status' }
+]
+
 const isActive = (href: string) => {
   return route.path === href
+}
+
+// Check if any WireGuard sub-item is active
+const isWireGuardActive = computed(() => {
+  return wireGuardItems.some(item => route.path === item.href)
+})
+
+const toggleWireGuard = () => {
+  wireGuardExpanded.value = !wireGuardExpanded.value
 }
 
 const handleLogout = async () => {
@@ -54,9 +71,97 @@ const userInitials = computed(() => {
     </div>
 
     <!-- Navigation -->
-    <nav class="flex flex-col flex-1 gap-1 px-4 py-2">
+    <nav class="flex flex-col flex-1 gap-1 px-4 py-2 overflow-y-auto">
+      <!-- Dashboard (first item) -->
       <NuxtLink
-        v-for="item in navItems"
+        to="/"
+        :class="[
+          'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group',
+          isActive('/')
+            ? 'bg-surface-highlight/50 text-white border-l-2 border-primary'
+            : 'text-text-secondary hover:bg-surface-highlight hover:text-white'
+        ]"
+        @click="emit('close')"
+      >
+        <span
+          class="material-symbols-outlined text-[20px]"
+          :class="{ 'group-hover:scale-110 transition-transform': !isActive('/') }"
+        >
+          dashboard
+        </span>
+        <p class="text-sm font-medium">Dashboard</p>
+      </NuxtLink>
+
+      <!-- WireGuard Collapsible Group -->
+      <div class="mt-2">
+        <button
+          @click="toggleWireGuard"
+          :class="[
+            'w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors group',
+            isWireGuardActive
+              ? 'bg-primary/10 text-primary border-l-2 border-primary'
+              : 'text-text-secondary hover:bg-surface-highlight hover:text-white'
+          ]"
+        >
+          <div class="flex items-center gap-3">
+            <span
+              class="material-symbols-outlined text-[20px]"
+              :class="{ 'group-hover:scale-110 transition-transform': !isWireGuardActive }"
+            >
+              vpn_key
+            </span>
+            <p class="text-sm font-medium">WireGuard</p>
+          </div>
+          <span
+            class="material-symbols-outlined text-[18px] transition-transform duration-200"
+            :class="{ 'rotate-180': wireGuardExpanded }"
+          >
+            expand_more
+          </span>
+        </button>
+
+        <!-- WireGuard Sub-items -->
+        <Transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="opacity-0 max-h-0"
+          enter-to-class="opacity-100 max-h-48"
+          leave-active-class="transition-all duration-150 ease-in"
+          leave-from-class="opacity-100 max-h-48"
+          leave-to-class="opacity-0 max-h-0"
+        >
+          <div v-show="wireGuardExpanded" class="overflow-hidden">
+            <div class="ml-4 mt-1 pl-3 border-l border-surface-highlight/50 space-y-1">
+              <NuxtLink
+                v-for="item in wireGuardItems"
+                :key="item.href"
+                :to="item.href"
+                :class="[
+                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group text-sm',
+                  isActive(item.href)
+                    ? 'bg-surface-highlight/50 text-white'
+                    : 'text-text-secondary hover:bg-surface-highlight/30 hover:text-white'
+                ]"
+                @click="emit('close')"
+              >
+                <span
+                  class="material-symbols-outlined text-[18px]"
+                  :class="{ 'group-hover:scale-110 transition-transform': !isActive(item.href) }"
+                >
+                  {{ item.icon }}
+                </span>
+                <p class="font-medium">{{ item.label }}</p>
+              </NuxtLink>
+            </div>
+          </div>
+        </Transition>
+      </div>
+
+      <!-- Divider -->
+      <div class="my-2 border-t border-surface-highlight/30"></div>
+
+      <!-- Other nav items -->
+      <NuxtLink
+        v-for="item in navItems.slice(1)"
         :key="item.href"
         :to="item.href"
         :class="[
