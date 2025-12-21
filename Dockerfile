@@ -31,6 +31,8 @@ RUN mkdir -p /app/wg-db && apk add --no-cache wireguard-tools iptables tcpdump
 ENV NODE_ENV=production
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
+ENV NITRO_HOST=0.0.0.0
+ENV NITRO_PORT=3000
 
 EXPOSE 3000
 
