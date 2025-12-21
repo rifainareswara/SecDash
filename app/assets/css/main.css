@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f230f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #214a21;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8ecc8e;
+}
+
+/* Glass panel effect */
+.glass-panel {
+  background: rgba(16, 35, 16, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Selection color */
+::selection {
+  background-color: #06f906;
+  color: black;
+}
+
+/* Hide scrollbar for filter buttons */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Global input styling for visibility */
+input,
+textarea {
+  background-color: #1a2f1a !important;
+  color: #ffffff !important;
+  caret-color: #06f906 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1a2f1a inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
