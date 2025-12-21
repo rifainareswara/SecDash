@@ -1,7 +1,7 @@
 services:
 
   wireguard:
-    image: linuxserver/wireguard:v1.0.20210914-ls7
+    image: linuxserver/wireguard:latest
     container_name: wireguard
     cap_add:
       - NET_ADMIN
@@ -21,11 +21,17 @@ services:
       - /lib/modules:/lib/modules:ro
     ports:
       - "${WG_PORT:-51820}:51820/udp"
-      - "${WEBUI_PORT:-3000}:3000" # Expose dashboard port via wireguard container network
+      - "${WEBUI_PORT:-3000}:3000"
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
       - net.ipv4.ip_forward=1
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wg", "show", "wg0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   vpn-dashboard:
     build: .
@@ -34,20 +40,17 @@ services:
     cap_add:
       - NET_ADMIN
     depends_on:
-      - wireguard
+      wireguard:
+        condition: service_healthy
     environment:
       - NODE_ENV=production
       - NUXT_HOST=0.0.0.0
       - NUXT_PORT=3000
       - NITRO_HOST=0.0.0.0
       - NITRO_PORT=3000
-      # Pass public host to app if needed for other logic
       - PUBLIC_HOST=${WG_HOST:-auto}
-      # Auth cookie security
-      - COOKIE_SECURE=${COOKIE_SECURE:-false} 
+      - COOKIE_SECURE=${COOKIE_SECURE:-false}
     volumes:
       - ./wg-db:/app/wg-db
       - ./config:/config
     restart: unless-stopped
-
-# Note: wireguard-ui has been removed and replaced by our custom vpn-dashboard
