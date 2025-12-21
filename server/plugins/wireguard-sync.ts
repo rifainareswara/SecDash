@@ -51,6 +51,26 @@ function syncWireGuardPeers() {
 
         console.log(`✅ WireGuard Sync: Synced ${synced}/${clients.length} peers to wg0 interface.`)
 
+        // 3. Ensure NAT/Masquerade Rules (Critical for Internet Access)
+        try {
+            console.log('🛡️ Verifying NAT rules...')
+            // Check if rule exists before adding (simple heuristic)
+            // Just attempting to add them (idempotent if we checked, but blindly adding duplicates is bad).
+            // Better: flush and re-add or just add-if-not-exists.
+
+            // Cleanest way for this startup script:
+            // 1. Allow Forwarding from wg0
+            execSync('iptables -C FORWARD -i wg0 -j ACCEPT || iptables -A FORWARD -i wg0 -j ACCEPT', { stdio: 'ignore' })
+
+            // 2. Masquerade (NAT) on default route interface (usually eth0)
+            // We assume eth0 for Docker environment.
+            execSync('iptables -t nat -C POSTROUTING -o eth0 -j MASQUERADE || iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE', { stdio: 'ignore' })
+
+            console.log('✅ NAT/Masquerade rules verified.')
+        } catch (e) {
+            console.warn('⚠️ Failed to apply NAT rules:', e)
+        }
+
     } catch (err) {
         console.error('❌ WireGuard Sync Fatal Error:', err)
     }
