@@ -2,100 +2,105 @@
 
 A modern, beautiful WireGuard VPN management dashboard built with Nuxt 3.
 
-![SecDash VPN Dashboard](./docs/preview.png)
-
 ## Features
 
 - 🔐 **Secure Authentication** - Username/password login with session management
-- 👥 **Client Management** - Create, edit, delete VPN clients
-- 📱 **QR Code Generation** - Scan with WireGuard mobile app
-- 📧 **Email Configs** - Send VPN configurations via email
-- 📊 **Real-time Stats** - Monitor connections and data transfer
+- 👥 **Client Management** - Create, edit, delete VPN clients with one click
+- 📱 **QR Code Generation** - Scan with WireGuard mobile app instantly
+- 📧 **Email Configs** - Send VPN configurations via email (SMTP)
+- 📊 **Real-time Stats** - Live monitoring of connections, handshakes, and data transfer
 - 🌐 **Traffic Monitoring** - Track access to internal servers
-- 🖥️ **Wake-on-LAN** - Wake devices on your network
-- 📱 **Responsive Design** - Works on desktop and mobile
+- 🖥️ **Wake-on-LAN** - Wake devices on your network remotely
+- 📱 **Responsive Design** - Works beautifully on desktop and mobile
 
-## Quick Start (Docker)
+---
+
+## Quick Start (One Command!)
 
 ### Prerequisites
 
-- Docker and Docker Compose
-- A server with public IP address
-- Port 51820/UDP (WireGuard) and 3000/TCP (Dashboard) accessible
+- Ubuntu/Debian server with Docker & Docker Compose installed
+- Public IP address
+- Ports open: 51820/UDP (WireGuard), 3000/TCP (Dashboard)
 
-### 1. Clone and Configure
+### Deploy
 
 ```bash
-git clone <repository-url>
-cd vpn
+# Clone repository
+git clone <repository-url> SecDash
+cd SecDash
 
-# Copy and edit environment file
+# Run deployment script
+chmod +x deploy.sh
+sudo ./deploy.sh
+
+# Or with specific IP:
+sudo ./deploy.sh YOUR_PUBLIC_IP
+```
+
+**That's it!** The script automatically:
+- ✅ Detects your public IP
+- ✅ Configures environment
+- ✅ Builds and starts containers
+- ✅ Sets up host firewall rules
+- ✅ Waits for services to be ready
+
+### Access
+
+- **Dashboard:** `http://YOUR_SERVER_IP:3000`
+- **Default Login:** `admin` / `password`
+
+⚠️ **Change the password after first login!**
+
+---
+
+## Creating VPN Clients
+
+1. Open the dashboard
+2. Click **Add Client** on Dashboard or VPN Clients page
+3. Enter client name and optional email
+4. **Scan the QR code** with WireGuard mobile app
+5. Activate the tunnel and enjoy!
+
+---
+
+## Manual Installation
+
+If you prefer manual setup:
+
+### 1. Configure Environment
+
+```bash
 cp .env.example .env
 nano .env
 ```
 
-**Important:** Set `WG_HOST` to your server's public IP address:
-
+Set these values:
 ```env
-WG_HOST=YOUR_PUBLIC_IP_HERE
+WG_HOST=YOUR_PUBLIC_IP    # Required!
 WG_PORT=51820
 WEBUI_PORT=3000
 ```
 
-### 2. Deploy
+### 2. Deploy Containers
 
 ```bash
-# Build and start containers
 docker-compose up -d --build
+```
 
-# Run host setup script (required for VPN to work!)
+### 3. Configure Host Firewall
+
+```bash
+# Enable IP forwarding
+sudo sysctl -w net.ipv4.ip_forward=1
+echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf
+
+# Run host setup script
 chmod +x scripts/setup-host.sh
 sudo ./scripts/setup-host.sh
 ```
 
-### 3. Access Dashboard
-
-Open `http://YOUR_SERVER_IP:3000` in your browser.
-
-Default credentials:
-- **Username:** admin
-- **Password:** password
-
-⚠️ **Change the password after first login!**
-
-### 4. Create VPN Client
-
-1. Go to **Dashboard** or **VPN Clients** page
-2. Click **Add Client**
-3. Scan the QR code with WireGuard mobile app
-4. Connect and enjoy!
-
-## Host Server Requirements
-
-Before the VPN can work, your host server needs:
-
-1. **IP Forwarding enabled:**
-   ```bash
-   sudo sysctl -w net.ipv4.ip_forward=1
-   echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf
-   ```
-
-2. **Proper iptables rules:**
-   Run the setup script:
-   ```bash
-   sudo ./scripts/setup-host.sh
-   ```
-
-3. **Firewall allows UDP 51820:**
-   ```bash
-   # UFW
-   sudo ufw allow 51820/udp
-   sudo ufw allow 3000/tcp
-   
-   # Or iptables
-   sudo iptables -A INPUT -p udp --dport 51820 -j ACCEPT
-   sudo iptables -A INPUT -p tcp --dport 3000 -j ACCEPT
-   ```
+---
 
 ## Configuration
 
@@ -103,61 +108,99 @@ Before the VPN can work, your host server needs:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `WG_HOST` | Public IP or domain for VPN endpoint | `auto` |
+| `WG_HOST` | **Required!** Public IP or domain | `auto` |
 | `WG_PORT` | WireGuard UDP port | `51820` |
 | `WEBUI_PORT` | Dashboard web port | `3000` |
 | `WG_SUBNET` | Internal VPN subnet | `10.252.1.0` |
 | `TZ` | Timezone | `Asia/Jakarta` |
-| `COOKIE_SECURE` | Use secure cookies (HTTPS only) | `false` |
+| `COOKIE_SECURE` | Use secure cookies (HTTPS) | `false` |
 
-### Changing Server IP
+### Moving to a New Server
 
-If you move to a new server:
+```bash
+# On new server:
+git clone <repo-url> SecDash
+cd SecDash
+sudo ./deploy.sh NEW_SERVER_IP
+```
 
-1. Update `WG_HOST` in `.env` to the new public IP
-2. Restart containers: `docker-compose down && docker-compose up -d`
-3. Run host setup: `sudo ./scripts/setup-host.sh`
-4. The dashboard will auto-sync the new IP
-5. Re-generate client configs (old QR codes won't work)
+After deployment:
+1. Old client configs will NOT work (different server keys)
+2. Create new clients and distribute new QR codes
+
+---
 
 ## Troubleshooting
 
 ### VPN Connected but No Internet
 
-1. **Check host IP forwarding:**
-   ```bash
-   sysctl net.ipv4.ip_forward
-   # Should show: net.ipv4.ip_forward = 1
-   ```
+```bash
+# 1. Check IP forwarding on host
+sysctl net.ipv4.ip_forward  # Should be 1
 
-2. **Run host setup script:**
-   ```bash
-   sudo ./scripts/setup-host.sh
-   ```
+# 2. Run host setup
+sudo ./scripts/setup-host.sh
 
-3. **Check container logs:**
-   ```bash
-   docker logs vpn-dashboard
-   docker logs wireguard
-   ```
-
-4. **Verify peer sync:**
-   ```bash
-   docker exec wireguard wg show
-   # Should show peers with recent handshake
-   ```
+# 3. Check container status
+docker-compose ps
+docker logs vpn-dashboard
+docker logs wireguard
+```
 
 ### Handshake Not Working
 
-1. Verify firewall allows UDP 51820
-2. Check endpoint address in client config matches server public IP
-3. Regenerate client config after changing server IP
+1. Verify UDP 51820 is open in firewall
+2. Check client has correct server public key
+3. Regenerate client config if server was reinstalled
 
-### Dashboard Not Accessible
+### Dashboard Shows "Never" for Handshake
 
-1. Check port 3000 is open in firewall
-2. Verify containers are running: `docker-compose ps`
-3. Check logs: `docker logs vpn-dashboard`
+The dashboard fetches real-time data from WireGuard. If showing "Never":
+1. Client hasn't connected yet
+2. Dashboard container can't access wg0 interface
+3. Try: `docker restart vpn-dashboard`
+
+### Container Errors
+
+```bash
+# View logs
+docker logs vpn-dashboard --tail 100
+docker logs wireguard --tail 100
+
+# Rebuild
+docker-compose down
+docker-compose up -d --build
+```
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Host Server                         │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │              Docker Network                      │   │
+│  │                                                  │   │
+│  │  ┌──────────────┐     ┌──────────────────────┐  │   │
+│  │  │  wireguard   │◄───►│    vpn-dashboard     │  │   │
+│  │  │  container   │     │      container       │  │   │
+│  │  │              │     │                      │  │   │
+│  │  │  - wg0 iface │     │  - Nuxt 3 app        │  │   │
+│  │  │  - UDP 51820 │     │  - REST API          │  │   │
+│  │  │  - CoreDNS   │     │  - JSON database     │  │   │
+│  │  └──────────────┘     └──────────────────────┘  │   │
+│  │         ▲                        │              │   │
+│  │         │ network_mode:          │ Port 3000   │   │
+│  │         │ service:wireguard      ▼              │   │
+│  └─────────┴───────────────────────────────────────┘   │
+│                                                         │
+│  Ports: 51820/UDP (VPN), 3000/TCP (Dashboard)          │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## Development
 
@@ -172,25 +215,33 @@ npm run dev
 npm run build
 ```
 
-## Architecture
+---
+
+## File Structure
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   Host Server                       │
-│  ┌──────────────┐    ┌──────────────────────────┐  │
-│  │  wireguard   │◄──►│    vpn-dashboard         │  │
-│  │  container   │    │    container             │  │
-│  │              │    │                          │  │
-│  │  - wg0 iface │    │  - Nuxt 3 app            │  │
-│  │  - Port 51820│    │  - REST API              │  │
-│  │              │    │  - wg-db (JSON files)    │  │
-│  └──────────────┘    └──────────────────────────┘  │
-│         ▲                       │                   │
-│         │ network_mode:         │ Port 3000         │
-│         │ service:wireguard     ▼                   │
-│         └───────────────────────┘                   │
-└─────────────────────────────────────────────────────┘
+SecDash/
+├── app/                    # Nuxt frontend
+│   ├── components/         # Vue components
+│   ├── composables/        # Vue composables
+│   ├── pages/              # Page routes
+│   └── layouts/            # Layout templates
+├── server/                 # Nitro backend
+│   ├── api/                # REST API endpoints
+│   ├── plugins/            # Server plugins
+│   └── utils/              # Utilities
+├── scripts/                # Deployment scripts
+│   ├── deploy.sh           # One-click deploy
+│   ├── setup-host.sh       # Host firewall setup
+│   └── docker-entrypoint.sh
+├── config/                 # WireGuard config (volume)
+├── wg-db/                  # Dashboard database (volume)
+├── docker-compose.yml
+├── Dockerfile
+└── .env.example
 ```
+
+---
 
 ## License
 
