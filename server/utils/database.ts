@@ -453,8 +453,9 @@ export function getClientConfig(clientId: string): string {
     // Check if client has a private key in the DB (schema update might be needed if not present)
     const privateKey = (client as any).private_key || '<CLIENT_PRIVATE_KEY>'
 
-    // Ensure endpoint has a value, fallback to localhost if missing (though should be detected)
-    const endpointHost = globalSettings.endpoint_address || '127.0.0.1'
+    // Ensure endpoint has a value, check env vars first, then global settings, then fallback
+    const envHost = process.env.PUBLIC_HOST || process.env.SERVERURL || process.env.WG_HOST
+    const endpointHost = (envHost && envHost !== 'auto') ? envHost : (globalSettings.endpoint_address || '127.0.0.1')
 
     // Build the config string
     const presharedKeyLine = client.preshared_key ? `PresharedKey = ${client.preshared_key}\n` : ''
