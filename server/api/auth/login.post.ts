@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
     // Set cookie
     setCookie(event, 'session', sessionId, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.COOKIE_SECURE === 'true', // Defaults to false if not set
         maxAge: 24 * 60 * 60,
         path: '/'
     })
