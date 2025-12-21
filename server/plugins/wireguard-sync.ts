@@ -1,17 +1,17 @@
 import { getClients, getServerConfig } from '../utils/database'
 import { execSync } from 'child_process'
 
-export default defineNitroPlugin((nitroApp) => {
+export default defineNitroPlugin(async (nitroApp) => {
     nitroApp.hooks.hook('request', () => {
         // No-op for requests
     })
 
     // Run sync on startup
     console.log('🔄 WireGuard Sync: Starting...')
-    syncWireGuardPeers()
+    await syncWireGuardPeers()
 })
 
-function syncWireGuardPeers() {
+async function syncWireGuardPeers() {
     try {
         const clients = getClients()
         const serverConfig = getServerConfig()
