@@ -77,10 +77,13 @@ export default defineEventHandler(async () => {
             updateServerConfig({ private_key: privateKey, public_key: publicKey, addresses: defaults.addresses })
         }
 
-        // Prepare global values with proper defaults
+        // Prepare global values
         const envHost = process.env.PUBLIC_HOST || process.env.SERVERURL || process.env.WG_HOST
         const effectiveEndpoint = (envHost && envHost !== 'auto') ? envHost : detectedIP
-        const endpointAddress = hasValue(globalSettings?.endpoint_address) ? globalSettings!.endpoint_address : effectiveEndpoint
+
+        // Priority: Env Var > DB Value > Detected IP
+        // We force Env Var if present because users changing docker-compose expect it to take effect.
+        const endpointAddress = (envHost && envHost !== 'auto') ? envHost : (hasValue(globalSettings?.endpoint_address) ? globalSettings!.endpoint_address : effectiveEndpoint)
         const dnsServers = hasValidArrayValues(globalSettings?.dns_servers) ? globalSettings!.dns_servers : defaults.dns_servers
 
         // Auto-save defaults if first time
