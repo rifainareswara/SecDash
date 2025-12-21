@@ -127,7 +127,7 @@ async function handleDeleteUser(username: string) {
       </div>
       <div>
         <button
-          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(160,160,160,0.3)]"
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-blue-400 text-black rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]"
           @click="showAddModal = true"
         >
           <span class="material-symbols-outlined text-[18px]">person_add</span>
@@ -151,7 +151,7 @@ async function handleDeleteUser(username: string) {
     <!-- Users Table -->
     <div v-else class="glass-panel rounded-xl overflow-hidden">
       <table class="w-full text-left">
-        <thead class="border-b border-surface-highlight bg-[#1a1a1a]">
+        <thead class="border-b border-surface-highlight bg-[#12121a]">
           <tr>
             <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase">Username</th>
             <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase">Role</th>
@@ -170,7 +170,7 @@ async function handleDeleteUser(username: string) {
               </div>
             </td>
             <td class="px-6 py-4">
-              <span class="px-2 py-1 rounded text-xs font-bold" :class="user.admin ? 'bg-primary/20 text-primary' : 'bg-gray-500/20 text-gray-400'">
+              <span class="px-2 py-1 rounded text-xs font-bold" :class="user.admin ? 'bg-primary/20 text-primary' : 'bg-blue-500/20 text-blue-400'">
                 {{ user.admin ? 'Admin' : 'User' }}
               </span>
             </td>
@@ -221,7 +221,7 @@ async function handleDeleteUser(username: string) {
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button @click="showAddModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-          <button @click="handleAddUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Create Admin</button>
+          <button @click="handleAddUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-blue-400">Create Admin</button>
         </div>
       </div>
     </div>
@@ -242,7 +242,7 @@ async function handleDeleteUser(username: string) {
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button @click="showEditModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-          <button @click="handleEditUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Save Changes</button>
+          <button @click="handleEditUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-blue-400">Save Changes</button>
         </div>
       </div>
     </div>

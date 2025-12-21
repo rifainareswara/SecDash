@@ -34,7 +34,7 @@ const setFilter = (filterId: string) => {
       <input
         v-model="searchQuery"
         type="text"
-        class="block w-full pl-10 pr-3 py-2.5 bg-[#0d0d0d] border border-transparent focus:border-primary/50 text-white rounded-lg placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary/50 sm:text-sm transition-all"
+        class="block w-full pl-10 pr-3 py-2.5 bg-[#0a0a0f] border border-transparent focus:border-primary/50 text-white rounded-lg placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary/50 sm:text-sm transition-all"
         placeholder="Search client, IP, or public key..."
       />
     </div>
@@ -48,7 +48,7 @@ const setFilter = (filterId: string) => {
           'whitespace-nowrap px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors',
           activeFilter === filter.id
             ? 'bg-primary/20 text-primary border-primary/20 hover:bg-primary/30'
-            : 'bg-surface-highlight text-text-secondary border-transparent hover:text-white hover:bg-[#3a3a3a]'
+            : 'bg-surface-highlight text-text-secondary border-transparent hover:text-white hover:bg-[#2a2a3a]'
         ]"
         @click="setFilter(filter.id)"
       >

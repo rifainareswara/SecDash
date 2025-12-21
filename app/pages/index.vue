@@ -271,14 +271,14 @@ const memoryUsage = computed(() => {
       </div>
       <div class="flex gap-2">
         <button
-          class="flex items-center gap-2 px-4 py-2 bg-surface-highlight hover:bg-[#3a3a3a] text-white rounded-lg text-sm font-medium transition-colors"
+          class="flex items-center gap-2 px-4 py-2 bg-surface-highlight hover:bg-[#2a2a3a] text-white rounded-lg text-sm font-medium transition-colors"
           @click="handleExport"
         >
           <span class="material-symbols-outlined text-[18px]">download</span>
           Export CSV
         </button>
         <button
-          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(160,160,160,0.3)]"
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-blue-400 text-black rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]"
           @click="handleRefresh"
         >
           <span class="material-symbols-outlined text-[18px]">refresh</span>
@@ -385,7 +385,7 @@ const memoryUsage = computed(() => {
           v-if="emailStatus"
           class="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-xl flex items-center gap-3"
           :class="emailStatus.success 
-            ? 'bg-gray-600 text-white' 
+            ? 'bg-blue-600 text-white' 
             : 'bg-red-600 text-white'"
         >
           <span class="material-symbols-outlined text-[20px]">

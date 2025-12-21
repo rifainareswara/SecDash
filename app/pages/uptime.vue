@@ -139,14 +139,14 @@ function resetForm() {
 
 function getStatusColor(status: string): string {
   switch (status) {
-    case 'up': return 'bg-gray-500'
+    case 'up': return 'bg-blue-500'
     case 'down': return 'bg-red-500'
-    default: return 'bg-gray-500'
+    default: return 'bg-blue-500'
   }
 }
 
 function getUptimeColor(uptime: number): string {
-  if (uptime >= 99) return 'text-gray-400'
+  if (uptime >= 99) return 'text-blue-400'
   if (uptime >= 95) return 'text-yellow-400'
   return 'text-red-400'
 }
@@ -194,7 +194,7 @@ onUnmounted(() => {
       </div>
       <button 
         @click="showAddModal = true"
-        class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg text-sm font-bold transition-colors shadow-lg"
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-blue-400 text-black rounded-lg text-sm font-bold transition-colors shadow-lg"
       >
         <span class="material-symbols-outlined text-[18px]">add</span>
         Add Monitor
@@ -208,7 +208,7 @@ onUnmounted(() => {
         <div class="text-sm text-text-secondary">Total Monitors</div>
       </div>
       <div class="glass-panel p-4 rounded-xl">
-        <div class="text-2xl font-bold text-gray-400">{{ summaryStats.up }}</div>
+        <div class="text-2xl font-bold text-blue-400">{{ summaryStats.up }}</div>
         <div class="text-sm text-text-secondary">Up</div>
       </div>
       <div class="glass-panel p-4 rounded-xl">
@@ -309,7 +309,7 @@ onUnmounted(() => {
               :key="idx"
               :class="[
                 'h-8 flex-1 rounded-sm transition-colors',
-                log.status === 'up' ? 'bg-gray-500/60 hover:bg-gray-500' : 'bg-red-500/60 hover:bg-red-500'
+                log.status === 'up' ? 'bg-blue-500/60 hover:bg-blue-500' : 'bg-red-500/60 hover:bg-red-500'
               ]"
               :title="`${new Date(log.timestamp).toLocaleTimeString()} - ${log.status.toUpperCase()} (${log.response_time}ms)`"
             ></div>
@@ -368,7 +368,7 @@ onUnmounted(() => {
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button @click="showAddModal = false; resetForm()" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-          <button @click="createMonitor" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Add Monitor</button>
+          <button @click="createMonitor" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-blue-400">Add Monitor</button>
         </div>
       </div>
     </div>
@@ -408,7 +408,7 @@ onUnmounted(() => {
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button @click="showEditModal = false; editingMonitor = null" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-          <button @click="updateMonitor" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Save Changes</button>
+          <button @click="updateMonitor" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-blue-400">Save Changes</button>
         </div>
       </div>
     </div>

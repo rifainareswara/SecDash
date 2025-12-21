@@ -84,7 +84,7 @@ const downloadConfig = () => {
                 <h2 class="text-3xl md:text-4xl font-black tracking-tight text-white">WireGuard Clients</h2>
                 <p class="text-text-secondary text-sm md:text-base">Manage your connected devices and generate configs.</p>
             </div>
-            <button @click="showAddModal = true" class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(160,160,160,0.3)]">
+            <button @click="showAddModal = true" class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-blue-400 text-black rounded-lg text-sm font-bold transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]">
           <span class="material-symbols-outlined text-[18px]">add</span>
           New Client
         </button>
@@ -117,7 +117,7 @@ const downloadConfig = () => {
                             <p class="text-xs text-text-secondary/80 mt-0.5">{{ client.virtualIp || 'No IP' }}</p>
                         </div>
                     </div>
-                    <div class="px-2 py-1 rounded text-xs font-bold" :class="client.enabled ? 'bg-gray-500/20 text-gray-400' : 'bg-red-500/20 text-red-400'">
+                    <div class="px-2 py-1 rounded text-xs font-bold" :class="client.enabled ? 'bg-blue-500/20 text-blue-400' : 'bg-red-500/20 text-red-400'">
                         {{ client.enabled ? 'Active' : 'Disabled' }}
                     </div>
                 </div>
@@ -160,7 +160,7 @@ const downloadConfig = () => {
             </div>
             <div class="flex justify-end gap-3 mt-6">
                 <button @click="showAddModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-                <button @click="handleAddClient" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Create Client</button>
+                <button @click="handleAddClient" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-blue-400">Create Client</button>
             </div>
         </div>
     </div>

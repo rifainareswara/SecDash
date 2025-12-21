@@ -104,7 +104,7 @@ async function handleDelete(id: string) {
         </p>
       </div>
       <button
-        class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg text-sm font-bold transition-colors"
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-blue-400 text-black rounded-lg text-sm font-bold transition-colors"
         @click="showAddModal = true"
       >
         <span class="material-symbols-outlined text-[18px]">add</span>
@@ -131,7 +131,7 @@ async function handleDelete(id: string) {
       <h3 class="text-xl font-bold text-white mb-2">No WoL Hosts</h3>
       <p class="text-text-secondary mb-6">Add hosts to wake devices remotely.</p>
       <button
-        class="px-4 py-2 bg-primary hover:bg-gray-400 text-black rounded-lg font-bold"
+        class="px-4 py-2 bg-primary hover:bg-blue-400 text-black rounded-lg font-bold"
         @click="showAddModal = true"
       >
         Add Your First Host
@@ -181,7 +181,7 @@ async function handleDelete(id: string) {
         <div 
           v-if="wakeStatus && wakeStatus.id === host.id"
           class="mt-3 p-3 rounded-lg text-sm"
-          :class="wakeStatus.success ? 'bg-gray-500/20 text-gray-400' : 'bg-red-500/20 text-red-400'"
+          :class="wakeStatus.success ? 'bg-blue-500/20 text-blue-400' : 'bg-red-500/20 text-red-400'"
         >
           {{ wakeStatus.message }}
         </div>
@@ -208,7 +208,7 @@ async function handleDelete(id: string) {
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button @click="showAddModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
-          <button @click="handleAddHost" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-gray-400">Add Host</button>
+          <button @click="handleAddHost" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-blue-400">Add Host</button>
         </div>
       </div>
     </div>

@@ -221,7 +221,7 @@ const checkConnectivity = async () => {
         <div class="lg:col-span-2 space-y-6">
             <form @submit.prevent="handleSave" class="glass-panel p-6 md:p-8 rounded-xl space-y-6">
                 <!-- Interface Header -->
-                <div class="bg-gray-600/20 border border-gray-500/30 p-3 rounded text-gray-400 font-bold">
+                <div class="bg-blue-600/20 border border-blue-500/30 p-3 rounded text-blue-400 font-bold">
                     Interface
                 </div>
 
@@ -275,7 +275,7 @@ const checkConnectivity = async () => {
                         <label class="text-sm text-text-secondary font-bold">Endpoint Address</label>
                         <div class="flex gap-2">
                             <input v-model="form.endpoint" type="text" class="flex-1 bg-surface border border-surface-highlight rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary">
-                            <button type="button" class="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded text-sm font-bold flex items-center gap-1">
+                            <button type="button" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-bold flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[16px]">auto_awesome</span> Suggest
                             </button>
                         </div>
@@ -326,11 +326,11 @@ const checkConnectivity = async () => {
                 </div>
 
                 <div class="pt-4 flex items-center justify-between">
-                     <p v-if="successMsg" class="text-gray-400 font-medium flex items-center gap-2">
+                     <p v-if="successMsg" class="text-blue-400 font-medium flex items-center gap-2">
                         <span class="material-symbols-outlined">check_circle</span>
                         {{ successMsg }}
                     </p>
-                    <button type="submit" :disabled="loading" class="px-6 py-2.5 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
+                    <button type="submit" :disabled="loading" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
                         <span v-if="loading" class="material-symbols-outlined animate-spin text-[18px]">sync</span>
                         Save
                     </button>
@@ -349,7 +349,7 @@ const checkConnectivity = async () => {
                     <label class="text-sm text-text-secondary font-bold">Private Key</label>
                     <div class="flex flex-col gap-2">
                         <input v-model="form.privateKey" :type="showPrivateKey ? 'text' : 'password'" class="w-full bg-surface border border-surface-highlight rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary text-[10px] font-mono truncate" readonly>
-                        <button type="button" @click="showPrivateKey = !showPrivateKey" :class="showPrivateKey ? 'bg-gray-600 hover:bg-gray-500' : 'bg-red-600 hover:bg-red-500'" class="w-full px-3 py-2 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1">
+                        <button type="button" @click="showPrivateKey = !showPrivateKey" :class="showPrivateKey ? 'bg-blue-600 hover:bg-blue-500' : 'bg-red-600 hover:bg-red-500'" class="w-full px-3 py-2 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1">
                             <span class="material-symbols-outlined text-[16px]">{{ showPrivateKey ? 'visibility_off' : 'visibility' }}</span>
                             {{ showPrivateKey ? 'Hide' : 'Show' }}
                         </button>
@@ -377,7 +377,7 @@ const checkConnectivity = async () => {
                     Check {{ form.endpoint || '101.47.128.101' }}:5000
                 </button>
 
-                <div v-if="statusResult" class="p-3 rounded-lg border text-sm" :class="statusResult.success ? 'bg-gray-500/10 border-gray-500/30 text-gray-400' : 'bg-red-500/10 border-red-500/30 text-red-400'">
+                <div v-if="statusResult" class="p-3 rounded-lg border text-sm" :class="statusResult.success ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-red-500/10 border-red-500/30 text-red-400'">
                     <div class="flex items-center gap-2 font-bold mb-1">
                         <span class="material-symbols-outlined text-[18px]">{{ statusResult.success ? 'check_circle' : 'error' }}</span>
                         {{ statusResult.success ? 'Reachable' : 'Unreachable' }}
@@ -438,7 +438,7 @@ const checkConnectivity = async () => {
                 </div>
                 
                 <div class="pt-2 flex items-center justify-between">
-                    <p v-if="smtpSuccessMsg" class="text-gray-400 text-sm flex items-center gap-1">
+                    <p v-if="smtpSuccessMsg" class="text-blue-400 text-sm flex items-center gap-1">
                         <span class="material-symbols-outlined text-[16px]">check_circle</span>
                         {{ smtpSuccessMsg }}
                     </p>

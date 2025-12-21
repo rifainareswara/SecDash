@@ -101,13 +101,13 @@ const formatTime = (timestamp: string) => {
 // Method color
 const getMethodColor = (method: string) => {
   const colors: Record<string, string> = {
-    'GET': 'text-gray-400 bg-gray-500/20',
+    'GET': 'text-blue-400 bg-blue-500/20',
     'POST': 'text-blue-400 bg-blue-500/20',
     'PUT': 'text-yellow-400 bg-yellow-500/20',
     'PATCH': 'text-orange-400 bg-orange-500/20',
     'DELETE': 'text-red-400 bg-red-500/20'
   }
-  return colors[method] || 'text-gray-400 bg-gray-500/20'
+  return colors[method] || 'text-blue-400 bg-blue-500/20'
 }
 </script>
 
@@ -130,7 +130,7 @@ const getMethodColor = (method: string) => {
         </label>
         <button
           @click="fetchLogs"
-          class="flex items-center gap-2 px-3 py-2 bg-surface-highlight hover:bg-[#3a3a3a] text-white rounded-lg text-sm transition-colors"
+          class="flex items-center gap-2 px-3 py-2 bg-surface-highlight hover:bg-[#2a2a3a] text-white rounded-lg text-sm transition-colors"
         >
           <span class="material-symbols-outlined text-[18px]">refresh</span>
         </button>
@@ -166,7 +166,7 @@ const getMethodColor = (method: string) => {
       <div class="glass-panel p-4 rounded-xl">
         <p class="text-text-secondary text-xs">Live Status</p>
         <div class="flex items-center gap-2">
-          <div class="size-2 rounded-full" :class="autoRefresh ? 'bg-gray-400 animate-pulse' : 'bg-gray-500'"></div>
+          <div class="size-2 rounded-full" :class="autoRefresh ? 'bg-blue-400 animate-pulse' : 'bg-blue-500'"></div>
           <span class="text-white text-lg font-bold">{{ autoRefresh ? 'Live' : 'Paused' }}</span>
         </div>
       </div>
@@ -182,7 +182,7 @@ const getMethodColor = (method: string) => {
     <div v-else class="glass-panel rounded-xl overflow-hidden">
       <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
         <table class="w-full text-left text-sm">
-          <thead class="bg-[#1a1a1a] sticky top-0">
+          <thead class="bg-[#12121a] sticky top-0">
             <tr>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Time</th>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">IP Address</th>

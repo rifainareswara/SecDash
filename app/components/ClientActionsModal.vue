@@ -148,7 +148,7 @@ function closeModal() {
               <span class="material-symbols-outlined text-4xl text-red-400">error</span>
               <p class="text-red-400 mt-3">{{ error }}</p>
               <button
-                class="mt-4 px-4 py-2 bg-primary text-black rounded-lg text-sm font-medium hover:bg-gray-400 transition-colors"
+                class="mt-4 px-4 py-2 bg-primary text-black rounded-lg text-sm font-medium hover:bg-blue-400 transition-colors"
                 @click="fetchConfig"
               >
                 Retry
@@ -168,7 +168,7 @@ function closeModal() {
             <!-- Config Tab -->
             <div v-else class="space-y-4">
               <div class="relative">
-                <pre class="bg-[#0a150a] p-4 rounded-xl text-sm text-gray-300 font-mono overflow-x-auto max-h-64 overflow-y-auto border border-surface-highlight">{{ config }}</pre>
+                <pre class="bg-[#0a150a] p-4 rounded-xl text-sm text-slate-300 font-mono overflow-x-auto max-h-64 overflow-y-auto border border-surface-highlight">{{ config }}</pre>
                 <button
                   class="absolute top-2 right-2 p-2 bg-surface-highlight hover:bg-surface-highlight/80 rounded-lg transition-colors"
                   @click="copyConfig"
@@ -183,13 +183,13 @@ function closeModal() {
           <!-- Footer -->
           <div class="flex gap-3 p-5 border-t border-surface-highlight">
             <button
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-surface-highlight hover:bg-[#3a3a3a] text-white rounded-xl text-sm font-medium transition-colors"
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-surface-highlight hover:bg-[#2a2a3a] text-white rounded-xl text-sm font-medium transition-colors"
               @click="closeModal"
             >
               Close
             </button>
             <button
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-gray-400 text-black rounded-xl text-sm font-bold transition-colors shadow-[0_0_15px_rgba(160,160,160,0.3)]"
+              class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-blue-400 text-black rounded-xl text-sm font-bold transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]"
               :disabled="loading || !!error"
               @click="downloadConfig"
             >

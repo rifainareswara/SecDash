@@ -56,16 +56,16 @@ const userInitials = computed(() => {
 </script>
 
 <template>
-  <aside class="flex flex-col w-72 h-full border-r border-surface-highlight bg-[#0d0d0d]">
+  <aside class="flex flex-col w-72 h-full border-r border-slate-800/50 bg-[#0a0a0f]">
     <!-- Logo -->
     <div class="p-6">
       <div class="flex items-center gap-3">
-        <div class="flex items-center justify-center size-10 rounded-full bg-primary/10 border border-primary/20 text-primary">
+        <div class="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-blue-400 shadow-lg shadow-blue-500/10">
           <span class="material-symbols-outlined text-[24px]">vpn_lock</span>
         </div>
         <div class="flex flex-col">
           <h1 class="text-white text-base font-bold tracking-wide">SecDash</h1>
-          <p class="text-text-secondary text-xs font-normal">v1</p>
+          <p class="text-slate-500 text-xs font-normal">v1.0</p>
         </div>
       </div>
     </div>
@@ -76,10 +76,10 @@ const userInitials = computed(() => {
       <NuxtLink
         to="/"
         :class="[
-          'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group',
+          'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
           isActive('/')
-            ? 'bg-surface-highlight/50 text-white border-l-2 border-primary'
-            : 'text-text-secondary hover:bg-surface-highlight hover:text-white'
+            ? 'bg-blue-500/10 text-blue-400 border-l-2 border-blue-500 shadow-sm shadow-blue-500/10'
+            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
         ]"
         @click="emit('close')"
       >
@@ -97,10 +97,10 @@ const userInitials = computed(() => {
         <button
           @click="toggleWireGuard"
           :class="[
-            'w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors group',
+            'w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group',
             isWireGuardActive
-              ? 'bg-primary/10 text-primary border-l-2 border-primary'
-              : 'text-text-secondary hover:bg-surface-highlight hover:text-white'
+              ? 'bg-blue-500/10 text-blue-400 border-l-2 border-blue-500'
+              : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
           ]"
         >
           <div class="flex items-center gap-3">
@@ -124,22 +124,22 @@ const userInitials = computed(() => {
         <Transition
           enter-active-class="transition-all duration-200 ease-out"
           enter-from-class="opacity-0 max-h-0"
-          enter-to-class="opacity-100 max-h-48"
+          enter-to-class="opacity-100 max-h-64"
           leave-active-class="transition-all duration-150 ease-in"
-          leave-from-class="opacity-100 max-h-48"
+          leave-from-class="opacity-100 max-h-64"
           leave-to-class="opacity-0 max-h-0"
         >
           <div v-show="wireGuardExpanded" class="overflow-hidden">
-            <div class="ml-4 mt-1 pl-3 border-l border-surface-highlight/50 space-y-1">
+            <div class="ml-4 mt-1 pl-3 border-l border-slate-700/50 space-y-1">
               <NuxtLink
                 v-for="item in wireGuardItems"
                 :key="item.href"
                 :to="item.href"
                 :class="[
-                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group text-sm',
+                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group text-sm',
                   isActive(item.href)
-                    ? 'bg-surface-highlight/50 text-white'
-                    : 'text-text-secondary hover:bg-surface-highlight/30 hover:text-white'
+                    ? 'bg-blue-500/10 text-blue-400'
+                    : 'text-slate-500 hover:bg-slate-800/30 hover:text-white'
                 ]"
                 @click="emit('close')"
               >
@@ -157,7 +157,7 @@ const userInitials = computed(() => {
       </div>
 
       <!-- Divider -->
-      <div class="my-2 border-t border-surface-highlight/30"></div>
+      <div class="my-3 border-t border-slate-800/50"></div>
 
       <!-- Other nav items -->
       <NuxtLink
@@ -165,10 +165,10 @@ const userInitials = computed(() => {
         :key="item.href"
         :to="item.href"
         :class="[
-          'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group',
+          'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
           isActive(item.href)
-            ? 'bg-surface-highlight/50 text-white border-l-2 border-primary'
-            : 'text-text-secondary hover:bg-surface-highlight hover:text-white'
+            ? 'bg-blue-500/10 text-blue-400 border-l-2 border-blue-500 shadow-sm shadow-blue-500/10'
+            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
         ]"
         @click="emit('close')"
       >
@@ -183,20 +183,20 @@ const userInitials = computed(() => {
     </nav>
 
     <!-- User Profile -->
-    <div class="p-4 border-t border-surface-highlight">
-      <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
-        <div class="relative size-10 rounded-full bg-cover bg-center bg-gradient-to-br from-gray-500 to-slate-600">
+    <div class="p-4 border-t border-slate-800/50">
+      <div class="bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 flex items-center gap-3">
+        <div class="relative size-10 rounded-full bg-cover bg-center bg-gradient-to-br from-blue-500 to-cyan-500">
           <div class="absolute inset-0 flex items-center justify-center text-white text-sm font-bold">
             {{ userInitials }}
           </div>
-          <div class="absolute bottom-0 right-0 size-2.5 rounded-full bg-primary border-2 border-[#0d0d0d]"></div>
+          <div class="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 border-2 border-[#0a0a0f]"></div>
         </div>
         <div class="flex flex-col overflow-hidden flex-1">
           <p class="text-sm font-medium text-white truncate">{{ user?.username || 'Admin' }}</p>
-          <p class="text-xs text-text-secondary truncate">{{ user?.isAdmin ? 'Administrator' : 'User' }}</p>
+          <p class="text-xs text-slate-500 truncate">{{ user?.isAdmin ? 'Administrator' : 'User' }}</p>
         </div>
         <button 
-          class="text-text-secondary hover:text-red-400 transition-colors"
+          class="text-slate-500 hover:text-red-400 transition-colors"
           @click="handleLogout"
           title="Sign Out"
         >
