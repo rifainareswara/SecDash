@@ -19,8 +19,7 @@ const navItems = [
   { icon: 'shield', label: 'Access Control', href: '/access-control' },
   { icon: 'speed', label: 'Uptime Monitor', href: '/uptime' },
   { icon: 'history', label: 'Access Logs', href: '/logs' },
-  { icon: 'admin_panel_settings', label: 'Admin Users', href: '/admin' },
-  { icon: 'power_settings_new', label: 'WoL Hosts', href: '/wol' }
+  { icon: 'admin_panel_settings', label: 'Admin Users', href: '/admin' }
 ]
 
 // WireGuard sub-menu items
@@ -28,7 +27,8 @@ const wireGuardItems = [
   { icon: 'dns', label: 'Server Config', href: '/config' },
   { icon: 'group', label: 'Clients', href: '/users' },
   { icon: 'settings_input_component', label: 'Connections', href: '/vpn-monitor' },
-  { icon: 'monitoring', label: 'Status', href: '/status' }
+  { icon: 'monitoring', label: 'Status', href: '/status' },
+  { icon: 'power_settings_new', label: 'WoL Hosts', href: '/wol' }
 ]
 
 const isActive = (href: string) => {

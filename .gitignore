@@ -22,3 +22,15 @@ logs
 .env
 .env.*
 !.env.example
+
+# WireGuard data (persisted on server, don't track in git)
+wg-db/clients/
+wg-db/server/*.json
+wg-db/users/
+wg-db/wake_on_lan_hosts/
+wg-db/uptime_logs/
+config/*.conf
+config/peer*
+config/server*
+config/templates/
+config/coredns/
