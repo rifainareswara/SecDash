@@ -10,7 +10,10 @@ A modern, beautiful WireGuard VPN management dashboard built with Nuxt 3.
 - 📧 **Email Configs** - Send VPN configurations via email (SMTP)
 - 📊 **Real-time Stats** - Live monitoring of connections, handshakes, and data transfer
 - 🌐 **Traffic Monitoring** - Track access to internal servers
+- 🔍 **Activity Monitoring** - Track browsing activity from connected devices *(NEW)*
 - 🖥️ **Wake-on-LAN** - Wake devices on your network remotely
+- ⚡ **Uptime Monitoring** - Monitor servers/services status like Uptime Kuma
+- 🚀 **Multi-Environment** - Run dev/uat/prod simultaneously without port conflicts *(NEW)*
 - 📱 **Responsive Design** - Works beautifully on desktop and mobile
 
 ---
@@ -202,6 +205,53 @@ docker-compose up -d --build
 
 ---
 
+## Multi-Environment Setup (NEW)
+
+Run multiple environments (dev/uat/prod) simultaneously without port conflicts:
+
+| Environment | Dashboard | WireGuard | Subnet |
+|-------------|-----------|-----------|--------|
+| DEV | :3000 | :51820 | 10.252.1.x |
+| UAT | :3001 | :51821 | 10.252.2.x |
+| PROD | :3002 | :51822 | 10.252.3.x |
+
+```bash
+# Start specific environment
+./run-env.sh dev      # Development
+./run-env.sh uat      # UAT
+./run-env.sh prod     # Production
+
+# Other commands
+./run-env.sh dev logs     # View logs
+./run-env.sh all status   # Status all envs
+./run-env.sh all stop     # Stop all
+```
+
+> **Note:** Production deployment via `./deploy.sh` still uses the original ports (3000/51820).
+
+See [environments/README.md](./environments/README.md) for details.
+
+---
+
+## Activity Monitoring (NEW)
+
+Track browsing activity from VPN-connected devices:
+
+1. Open **Activity Monitor** from sidebar
+2. Click **Install Agent**
+3. Choose installation method (Browser Extension / Console Script)
+4. View real-time activity and statistics
+
+Features:
+- Real-time browsing feed
+- Top domains & categories analytics
+- Filtering by domain, category, device
+- Auto-categorization (social, video, news, etc)
+
+See [docs/ACTIVITY_MONITORING.md](./docs/ACTIVITY_MONITORING.md) for full guide.
+
+---
+
 ## Development
 
 ```bash
@@ -230,19 +280,43 @@ SecDash/
 │   ├── api/                # REST API endpoints
 │   ├── plugins/            # Server plugins
 │   └── utils/              # Utilities
+├── public/
+│   └── agent/              # Activity tracking agent
+│       ├── activity-tracker.js
+│       └── extension/      # Chrome extension
+├── environments/           # Multi-env configs (NEW)
+│   ├── dev.env
+│   ├── uat.env
+│   └── prod.env
+├── docs/                   # Documentation
+│   ├── USER_GUIDE.md
+│   ├── API_REFERENCE.md
+│   ├── CODE_OVERVIEW.md
+│   └── ACTIVITY_MONITORING.md
 ├── scripts/                # Deployment scripts
-│   ├── deploy.sh           # One-click deploy
-│   ├── setup-host.sh       # Host firewall setup
-│   └── docker-entrypoint.sh
 ├── config/                 # WireGuard config (volume)
 ├── wg-db/                  # Dashboard database (volume)
-├── docker-compose.yml
+├── docker-compose.yml              # Standard compose
+├── docker-compose.multi-env.yml    # Multi-env compose
+├── run-env.sh              # Multi-env runner
+├── deploy.sh               # Production deploy
 ├── Dockerfile
 └── .env.example
 ```
 
 ---
 
+## Documentation
+
+- [User Guide](./docs/USER_GUIDE.md) - End-user guide
+- [API Reference](./docs/API_REFERENCE.md) - REST API documentation
+- [Code Overview](./docs/CODE_OVERVIEW.md) - Developer guide
+- [Activity Monitoring](./docs/ACTIVITY_MONITORING.md) - Browsing tracker guide
+- [Multi-Environment](./environments/README.md) - Dev/UAT/Prod setup
+
+---
+
 ## License
 
 MIT
+
