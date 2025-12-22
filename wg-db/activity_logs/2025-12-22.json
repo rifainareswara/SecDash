@@ -1,0 +1,73 @@
+[
+  {
+    "id": "1766386840285-8c8cb67f",
+    "client_id": "laptop-kantor-001",
+    "device_name": "Laptop Kantor",
+    "url": "https://github.com/repos",
+    "domain": "github.com",
+    "title": "Your Repositories - GitHub",
+    "category": "work",
+    "source": "agent",
+    "blocked": false,
+    "timestamp": "2025-12-22T07:00:40.285Z"
+  },
+  {
+    "id": "1766386839992-81559b20",
+    "client_id": "iphone-ayah-001",
+    "device_name": "iPhone Ayah",
+    "url": "https://facebook.com/notifications",
+    "domain": "facebook.com",
+    "title": "Notifications - Facebook",
+    "category": "social",
+    "source": "agent",
+    "blocked": false,
+    "timestamp": "2025-12-22T07:00:39.993Z"
+  },
+  {
+    "id": "1766386654989-fc2a1d52",
+    "client_id": "ipad-003",
+    "device_name": "iPad Anak",
+    "url": "https://tiktok.com/foryou",
+    "domain": "tiktok.com",
+    "title": "For You - TikTok",
+    "category": "social",
+    "source": "agent",
+    "blocked": false,
+    "timestamp": "2025-12-22T06:57:34.989Z"
+  },
+  {
+    "id": "1766386654651-c86e8bfb",
+    "client_id": "laptop-002",
+    "device_name": "Laptop Kantor",
+    "url": "https://youtube.com/shorts",
+    "domain": "youtube.com",
+    "title": "Shorts - YouTube",
+    "category": "video",
+    "source": "agent",
+    "blocked": false,
+    "timestamp": "2025-12-22T06:57:34.651Z"
+  },
+  {
+    "id": "1766386652295-0311e538",
+    "client_id": "iphone-001",
+    "device_name": "iPhone Ayah",
+    "url": "https://instagram.com/explore",
+    "domain": "instagram.com",
+    "title": "Explore - Instagram",
+    "category": "social",
+    "source": "agent",
+    "blocked": false,
+    "timestamp": "2025-12-22T06:57:32.296Z"
+  },
+  {
+    "id": "1766386234927-cd3c813e",
+    "client_id": "test-local-device",
+    "url": "https://youtube.com/watch?v=test123",
+    "domain": "youtube.com",
+    "title": "Test Video - YouTube",
+    "category": "video",
+    "source": "agent",
+    "blocked": false,
+    "timestamp": "2025-12-22T06:50:34.929Z"
+  }
+]

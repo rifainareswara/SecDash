@@ -3,10 +3,10 @@
     "10.252.1.0/24"
   ],
   "listen_port": "51820",
-  "updated_at": "2025-12-22T06:24:41.449Z",
+  "private_key": "wGFBFwfem36bDdYJv3sJ/3beDwCQTVNVOSxFONiBIV8=",
+  "public_key": "mApqCTLdtpIcwdreZR3brdMInbFV3fNHClgjUuq5rS8=",
   "post_up": "iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE",
   "pre_down": "",
   "post_down": "iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE",
-  "private_key": "9qVFgvF8LQAiYWi0QWhi23FvzHDE6RO3idQc7izfcCg=",
-  "public_key": "RxNnoruoIByG/euqCAyMVwYiVMfCCcUz3jyq+QZueXc="
+  "updated_at": "2025-12-22T05:43:54.875Z"
 }
