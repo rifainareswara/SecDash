@@ -335,6 +335,78 @@ POST /api/wol-hosts/:id/wake
 
 ---
 
+## Activity Monitoring
+
+### Log Activity (Agent Endpoint)
+
+```http
+POST /api/activity-agent
+Content-Type: application/json
+X-Client-Id: device-abc123
+
+{
+  "url": "https://example.com/page",
+  "title": "Page Title",
+  "device_name": "John's Laptop"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "logged_count": 1,
+  "timestamp": "2025-12-22T11:00:00.000Z"
+}
+```
+
+### Get Activity Logs
+
+```http
+GET /api/activity-logs?limit=100&category=social
+```
+
+**Query Parameters:**
+- `limit` - Max records (default: 100)
+- `client_id` - Filter by client
+- `category` - Filter by category (social, video, news, etc)
+- `domain` - Filter by domain (partial match)
+- `start_date` / `end_date` - ISO date range
+
+### Get Activity Statistics
+
+```http
+GET /api/activity-logs?stats=true&period=24h
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "stats": {
+    "total_visits": 150,
+    "unique_domains": 25,
+    "top_domains": [...],
+    "top_categories": [...],
+    "visits_by_hour": [...],
+    "period": "24h"
+  }
+}
+```
+
+### Cleanup Old Logs
+
+```http
+DELETE /api/activity-logs
+Content-Type: application/json
+
+{
+  "days_to_keep": 30
+}
+```
+
+---
+
 ## Error Responses
 
 All errors follow this format:

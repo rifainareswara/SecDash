@@ -179,6 +179,18 @@ Wake up devices on your network:
 2. Add a host with MAC address
 3. Click **Wake** to send magic packet
 
+### Activity Monitor
+
+Track browsing activity dari perangkat yang terhubung VPN:
+
+1. Go to **Activity Monitor** page
+2. View real-time browsing activity feed
+3. See top domains and category breakdown
+4. Filter by domain or category
+5. Install agent on devices to start tracking
+
+**Untuk panduan lengkap, lihat [Activity Monitoring Documentation](./ACTIVITY_MONITORING.md)**
+
 ---
 
 ## 8. Troubleshooting

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 320px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e5e5e5;
+            padding: 16px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #1e1e2e;
+        }
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .subtitle {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #1e1e2e;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        .status-dot.inactive {
+            background: #ef4444;
+        }
+        .status-text {
+            font-size: 12px;
+            flex: 1;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+        input {
+            width: 100%;
+            padding: 8px 12px;
+            background: #1e1e2e;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            color: #e5e5e5;
+            font-size: 12px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+        .toggle-switch {
+            width: 40px;
+            height: 22px;
+            background: #374151;
+            border-radius: 11px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .toggle-switch.active {
+            background: #3b82f6;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.2s;
+        }
+        .toggle-switch.active::after {
+            left: 20px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .btn-secondary {
+            background: #374151;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .info {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #1e1e2e;
+        }
+        .message {
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .message.success {
+            background: #22c55e20;
+            color: #22c55e;
+        }
+        .message.error {
+            background: #ef444420;
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🔒</div>
+        <div>
+            <div class="title">Activity Tracker</div>
+            <div class="subtitle">VPN Dashboard</div>
+        </div>
+    </div>
+
+    <div class="status">
+        <div class="status-dot" id="statusDot"></div>
+        <span class="status-text" id="statusText">Connecting...</span>
+    </div>
+
+    <div class="form-group">
+        <label>Server URL</label>
+        <input type="url" id="serverUrl" placeholder="https://your-dashboard.com">
+    </div>
+
+    <div class="form-group">
+        <label>Device Name</label>
+        <input type="text" id="deviceName" placeholder="My Work Laptop">
+    </div>
+
+    <div class="toggle">
+        <span style="font-size: 12px;">Enable Tracking</span>
+        <div class="toggle-switch" id="toggleEnabled"></div>
+    </div>
+
+    <button class="btn" id="saveBtn">Save Settings</button>
+    <button class="btn btn-secondary" id="testBtn">Test Connection</button>
+
+    <div id="message"></div>
+
+    <div class="info">
+        <strong>Client ID:</strong> <span id="clientId">-</span>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -848,3 +848,266 @@ export function getUptimeStats(monitorId: string): UptimeStats {
 
     return stats
 }
+
+// ==========================================
+// Browsing Activity Tracking
+// ==========================================
+
+export interface BrowsingActivity {
+    id: string
+    client_id: string           // VPN client ID or device identifier
+    device_name?: string        // Optional device name
+    url: string                 // Full URL
+    domain: string              // Extracted domain
+    title?: string              // Page title if available
+    category?: string           // Category (social, news, work, etc)
+    source: 'agent' | 'dns'     // Data source
+    blocked?: boolean           // Was this access blocked
+    timestamp: string
+    duration?: number           // Time spent in seconds
+}
+
+export interface ActivityStats {
+    total_visits: number
+    unique_domains: number
+    top_domains: { domain: string; count: number }[]
+    top_categories: { category: string; count: number }[]
+    visits_by_hour: { hour: number; count: number }[]
+    period: '24h' | '7d' | '30d'
+}
+
+const ACTIVITY_LOGS_DIR = join(DB_PATH, 'activity_logs')
+const MAX_ACTIVITY_LOGS = 10000 // Keep last 10k logs
+
+function ensureActivityDirs() {
+    if (!existsSync(ACTIVITY_LOGS_DIR)) {
+        mkdirSync(ACTIVITY_LOGS_DIR, { recursive: true })
+    }
+}
+
+// Extract domain from URL
+function extractDomain(url: string): string {
+    try {
+        const urlObj = new URL(url)
+        return urlObj.hostname.replace(/^www\./, '')
+    } catch {
+        // If URL parsing fails, try to extract domain manually
+        const match = url.match(/(?:https?:\/\/)?(?:www\.)?([^\/:\?]+)/i)
+        return match ? match[1] : url
+    }
+}
+
+// Categorize domain (basic categorization)
+function categorizeDomain(domain: string): string {
+    const categories: Record<string, string[]> = {
+        'social': ['facebook.com', 'twitter.com', 'instagram.com', 'tiktok.com', 'linkedin.com', 'x.com', 'threads.net'],
+        'video': ['youtube.com', 'netflix.com', 'twitch.tv', 'vimeo.com', 'disney.com'],
+        'news': ['cnn.com', 'bbc.com', 'detik.com', 'kompas.com', 'liputan6.com', 'tribunnews.com'],
+        'shopping': ['tokopedia.com', 'shopee.co.id', 'lazada.co.id', 'bukalapak.com', 'amazon.com', 'ebay.com'],
+        'work': ['slack.com', 'notion.so', 'trello.com', 'asana.com', 'github.com', 'gitlab.com', 'jira.atlassian.com'],
+        'email': ['gmail.com', 'mail.google.com', 'outlook.com', 'mail.yahoo.com'],
+        'search': ['google.com', 'bing.com', 'duckduckgo.com', 'yahoo.com'],
+        'gaming': ['steam.com', 'epicgames.com', 'roblox.com', 'minecraft.net'],
+        'adult': [] // Add domains to block/flag
+    }
+
+    for (const [category, domains] of Object.entries(categories)) {
+        if (domains.some(d => domain.includes(d) || d.includes(domain))) {
+            return category
+        }
+    }
+    return 'other'
+}
+
+// Log browsing activity
+export function logBrowsingActivity(data: {
+    client_id: string
+    device_name?: string
+    url: string
+    title?: string
+    source: 'agent' | 'dns'
+    duration?: number
+}): BrowsingActivity {
+    ensureActivityDirs()
+
+    const domain = extractDomain(data.url)
+    const category = categorizeDomain(domain)
+
+    const activity: BrowsingActivity = {
+        id: `${Date.now()}-${randomBytes(4).toString('hex')}`,
+        client_id: data.client_id,
+        device_name: data.device_name,
+        url: data.url,
+        domain,
+        title: data.title,
+        category,
+        source: data.source,
+        blocked: false,
+        timestamp: new Date().toISOString(),
+        duration: data.duration
+    }
+
+    // Store in daily log files for easier management
+    const dateKey = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+    const logFile = join(ACTIVITY_LOGS_DIR, `${dateKey}.json`)
+
+    let logs: BrowsingActivity[] = readJsonFile<BrowsingActivity[]>(logFile) || []
+    logs.unshift(activity)
+
+    // Limit logs per day
+    if (logs.length > MAX_ACTIVITY_LOGS) {
+        logs = logs.slice(0, MAX_ACTIVITY_LOGS)
+    }
+
+    writeJsonFile(logFile, logs)
+    return activity
+}
+
+// Get browsing activity logs with filtering
+export function getBrowsingActivity(options: {
+    client_id?: string
+    domain?: string
+    category?: string
+    source?: 'agent' | 'dns'
+    start_date?: string
+    end_date?: string
+    limit?: number
+}): BrowsingActivity[] {
+    ensureActivityDirs()
+
+    const limit = options.limit || 500
+    const endDate = options.end_date ? new Date(options.end_date) : new Date()
+    const startDate = options.start_date ? new Date(options.start_date) : new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000) // Default: 7 days
+
+    let allLogs: BrowsingActivity[] = []
+
+    try {
+        const files = readdirSync(ACTIVITY_LOGS_DIR)
+            .filter(f => f.endsWith('.json'))
+            .sort((a, b) => b.localeCompare(a)) // Most recent first
+
+        for (const file of files) {
+            const dateStr = file.replace('.json', '')
+            const fileDate = new Date(dateStr)
+
+            // Skip files outside date range
+            if (fileDate < startDate || fileDate > endDate) continue
+
+            const logs = readJsonFile<BrowsingActivity[]>(join(ACTIVITY_LOGS_DIR, file)) || []
+            allLogs = allLogs.concat(logs)
+
+            // Early exit if we have enough
+            if (allLogs.length >= limit * 2) break
+        }
+    } catch (error) {
+        console.error('Error reading activity logs:', error)
+    }
+
+    // Apply filters
+    let filtered = allLogs
+
+    if (options.client_id) {
+        filtered = filtered.filter(l => l.client_id === options.client_id)
+    }
+    if (options.domain) {
+        filtered = filtered.filter(l => l.domain.includes(options.domain!))
+    }
+    if (options.category) {
+        filtered = filtered.filter(l => l.category === options.category)
+    }
+    if (options.source) {
+        filtered = filtered.filter(l => l.source === options.source)
+    }
+
+    // Sort by timestamp descending and limit
+    return filtered
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, limit)
+}
+
+// Get activity statistics
+export function getActivityStats(client_id?: string, period: '24h' | '7d' | '30d' = '24h'): ActivityStats {
+    const now = Date.now()
+    const periodMs = {
+        '24h': 24 * 60 * 60 * 1000,
+        '7d': 7 * 24 * 60 * 60 * 1000,
+        '30d': 30 * 24 * 60 * 60 * 1000
+    }
+
+    const startDate = new Date(now - periodMs[period]).toISOString()
+    const logs = getBrowsingActivity({
+        client_id,
+        start_date: startDate,
+        limit: 10000
+    })
+
+    // Calculate stats
+    const domainCounts: Record<string, number> = {}
+    const categoryCounts: Record<string, number> = {}
+    const hourCounts: Record<number, number> = {}
+
+    for (const log of logs) {
+        // Domain counts
+        domainCounts[log.domain] = (domainCounts[log.domain] || 0) + 1
+
+        // Category counts
+        if (log.category) {
+            categoryCounts[log.category] = (categoryCounts[log.category] || 0) + 1
+        }
+
+        // Hour counts
+        const hour = new Date(log.timestamp).getHours()
+        hourCounts[hour] = (hourCounts[hour] || 0) + 1
+    }
+
+    // Sort and get top items
+    const topDomains = Object.entries(domainCounts)
+        .map(([domain, count]) => ({ domain, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10)
+
+    const topCategories = Object.entries(categoryCounts)
+        .map(([category, count]) => ({ category, count }))
+        .sort((a, b) => b.count - a.count)
+
+    const visitsByHour = Array.from({ length: 24 }, (_, hour) => ({
+        hour,
+        count: hourCounts[hour] || 0
+    }))
+
+    return {
+        total_visits: logs.length,
+        unique_domains: Object.keys(domainCounts).length,
+        top_domains: topDomains,
+        top_categories: topCategories,
+        visits_by_hour: visitsByHour,
+        period
+    }
+}
+
+// Delete old activity logs
+export function cleanupActivityLogs(daysToKeep: number = 30): number {
+    ensureActivityDirs()
+
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
+    let deletedCount = 0
+
+    try {
+        const files = readdirSync(ACTIVITY_LOGS_DIR).filter(f => f.endsWith('.json'))
+
+        for (const file of files) {
+            const dateStr = file.replace('.json', '')
+            const fileDate = new Date(dateStr)
+
+            if (fileDate < cutoffDate) {
+                unlinkSync(join(ACTIVITY_LOGS_DIR, file))
+                deletedCount++
+            }
+        }
+    } catch (error) {
+        console.error('Error cleaning up activity logs:', error)
+    }
+
+    return deletedCount
+}
