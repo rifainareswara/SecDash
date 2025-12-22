@@ -27,7 +27,11 @@ if [ -n "$1" ]; then
     echo "📍 Using provided IP: $PUBLIC_IP"
 else
     echo "🌐 Detecting public IP..."
-    PUBLIC_IP=$(curl -s ifconfig.me 2>/dev/null || wget -qO- ifconfig.me 2>/dev/null || echo "")
+    PUBLIC_IP=$(curl -s --max-time 5 https://api.ipify.org 2>/dev/null || wget -qO- --timeout=5 https://api.ipify.org 2>/dev/null || echo "")
+    # Validate IP format
+    if ! echo "$PUBLIC_IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
+        PUBLIC_IP=""
+    fi
     if [ -z "$PUBLIC_IP" ]; then
         echo "❌ Could not detect public IP. Please provide it as argument:"
         echo "   ./deploy.sh YOUR_PUBLIC_IP"

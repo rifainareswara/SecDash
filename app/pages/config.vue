@@ -215,7 +215,7 @@ const checkConnectivity = async () => {
       <p class="text-text-secondary text-sm md:text-base">Configure your WireGuard server.</p>
     </div>
 
-    <div class="max-w-4xl grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="max-w-4xl grid grid-cols-1 gap-8 lg:grid-cols-3">
         
         <!-- Left Column: Interface Settings -->
         <div class="lg:col-span-2 space-y-6">
@@ -362,7 +362,7 @@ const checkConnectivity = async () => {
                 </div>
             </div>
 
-            <div class="glass-panel p-6 rounded-xl space-y-4">
+            <div class="glass-panel p-6 rounded-xl space-y-4 overflow-hidden">
                  <div class="bg-purple-600/20 border border-purple-500/30 p-3 rounded text-purple-400 font-bold flex items-center gap-2">
                     <span class="material-symbols-outlined">network_check</span> Connectivity Status
                 </div>
@@ -377,12 +377,12 @@ const checkConnectivity = async () => {
                     Check {{ form.endpoint || '101.47.128.101' }}:5000
                 </button>
 
-                <div v-if="statusResult" class="p-3 rounded-lg border text-sm" :class="statusResult.success ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-red-500/10 border-red-500/30 text-red-400'">
+                <div v-if="statusResult" class="p-3 rounded-lg border text-sm overflow-hidden" :class="statusResult.success ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-red-500/10 border-red-500/30 text-red-400'">
                     <div class="flex items-center gap-2 font-bold mb-1">
                         <span class="material-symbols-outlined text-[18px]">{{ statusResult.success ? 'check_circle' : 'error' }}</span>
                         {{ statusResult.success ? 'Reachable' : 'Unreachable' }}
                     </div>
-                    <p>{{ statusResult.message }}</p>
+                    <p class="truncate max-w-full">{{ statusResult.message?.substring(0, 100) }}</p>
                     <p v-if="statusResult.latency" class="mt-1 text-xs opacity-80">Latency: {{ statusResult.latency }}ms</p>
                 </div>
             </div>

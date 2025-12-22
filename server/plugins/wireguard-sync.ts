@@ -74,8 +74,19 @@ async function syncEndpointAddress() {
         const globalSettings = getGlobalSettings()
         if (!globalSettings) return
 
-        // Check if endpoint looks like a private IP or placeholder
+        // Check if endpoint looks like a private IP, placeholder, or corrupted data (HTML)
         const currentEndpoint = globalSettings.endpoint_address || ''
+
+        // Validate current endpoint is actually a valid IP format
+        const ipRegex = /^(?:\d{1,3}\.){3}\d{1,3}$/
+        const isCurrentEndpointValidIP = ipRegex.test(currentEndpoint)
+
+        // Check for HTML content (corrupted data)
+        const containsHTML = currentEndpoint.includes('<') ||
+            currentEndpoint.includes('DOCTYPE') ||
+            currentEndpoint.includes('html') ||
+            currentEndpoint.length > 50  // IP addresses are never this long
+
         const isPrivateOrInvalid = !currentEndpoint ||
             currentEndpoint === 'auto' ||
             currentEndpoint === '127.0.0.1' ||
@@ -83,7 +94,9 @@ async function syncEndpointAddress() {
             currentEndpoint.startsWith('10.') ||
             currentEndpoint.startsWith('172.16.') ||
             currentEndpoint.startsWith('172.17.') ||
-            currentEndpoint.startsWith('172.18.')
+            currentEndpoint.startsWith('172.18.') ||
+            containsHTML ||
+            !isCurrentEndpointValidIP  // Force re-detection if current value is not a valid IP
 
         if (isPrivateOrInvalid) {
             console.log('🌐 Current endpoint appears invalid, detecting public IP...')
@@ -92,29 +105,76 @@ async function syncEndpointAddress() {
             let publicIP = process.env.PUBLIC_HOST || process.env.WG_HOST || process.env.SERVERURL || ''
 
             if (!publicIP || publicIP === 'auto') {
-                // Try to get from external service
+                // Try each IP detection service individually with validation
+                const ipRegexCheck = /^(?:\d{1,3}\.){3}\d{1,3}$/
+
+                // Try api.ipify.org first (most reliable, always returns plain text)
                 try {
-                    publicIP = execSync('wget -qO- ifconfig.me 2>/dev/null || curl -s ifconfig.me 2>/dev/null || echo ""', {
+                    const ipifyResult = execSync('curl -s --max-time 5 https://api.ipify.org 2>/dev/null || wget -qO- --timeout=5 https://api.ipify.org 2>/dev/null || echo ""', {
                         encoding: 'utf-8',
                         shell: '/bin/sh',
-                        timeout: 5000
+                        timeout: 10000
                     }).trim()
-                } catch {
-                    // Fallback: try to read from WireGuard container's detected IP
-                    try {
-                        publicIP = execSync('cat /config/server/external_ip 2>/dev/null || echo ""', { encoding: 'utf-8', shell: '/bin/sh' }).trim()
-                    } catch {
-                        // ignore
+                    if (ipRegexCheck.test(ipifyResult)) {
+                        publicIP = ipifyResult
+                        console.log('🌐 Got IP from api.ipify.org')
                     }
+                } catch { /* ignore */ }
+
+                // Try ifconfig.me/ip as fallback
+                if (!publicIP || !ipRegexCheck.test(publicIP)) {
+                    try {
+                        const ifconfigResult = execSync('curl -s --max-time 5 https://ifconfig.me/ip 2>/dev/null || wget -qO- --timeout=5 https://ifconfig.me/ip 2>/dev/null || echo ""', {
+                            encoding: 'utf-8',
+                            shell: '/bin/sh',
+                            timeout: 10000
+                        }).trim()
+                        if (ipRegexCheck.test(ifconfigResult)) {
+                            publicIP = ifconfigResult
+                            console.log('🌐 Got IP from ifconfig.me/ip')
+                        }
+                    } catch { /* ignore */ }
+                }
+
+                // Try icanhazip.com as last resort
+                if (!publicIP || !ipRegexCheck.test(publicIP)) {
+                    try {
+                        const icanhazResult = execSync('curl -s --max-time 5 https://icanhazip.com 2>/dev/null || wget -qO- --timeout=5 https://icanhazip.com 2>/dev/null || echo ""', {
+                            encoding: 'utf-8',
+                            shell: '/bin/sh',
+                            timeout: 10000
+                        }).trim()
+                        if (ipRegexCheck.test(icanhazResult)) {
+                            publicIP = icanhazResult
+                            console.log('🌐 Got IP from icanhazip.com')
+                        }
+                    } catch { /* ignore */ }
+                }
+
+                // Fallback: try to read from WireGuard container's detected IP
+                if (!publicIP || !ipRegexCheck.test(publicIP)) {
+                    try {
+                        const fileIP = execSync('cat /config/server/external_ip 2>/dev/null || echo ""', { encoding: 'utf-8', shell: '/bin/sh' }).trim()
+                        if (ipRegexCheck.test(fileIP)) {
+                            publicIP = fileIP
+                            console.log('🌐 Got IP from external_ip file')
+                        }
+                    } catch { /* ignore */ }
                 }
             }
 
-            if (publicIP && publicIP !== currentEndpoint && !publicIP.startsWith('192.168.') && !publicIP.startsWith('10.')) {
+            // Validate that publicIP looks like an IP address (not HTML)
+            const ipRegex = /^(?:\d{1,3}\.){3}\d{1,3}$/
+            const isValidIP = ipRegex.test(publicIP)
+
+            if (isValidIP && publicIP !== currentEndpoint && !publicIP.startsWith('192.168.') && !publicIP.startsWith('10.')) {
                 console.log(`🌐 Detected public IP: ${publicIP}`)
                 updateGlobalSettings({
                     endpoint_address: publicIP
                 })
                 console.log('✅ Endpoint address updated!')
+            } else if (!isValidIP && publicIP) {
+                console.warn('⚠️ Detected IP is invalid format, skipping update:', publicIP.substring(0, 50))
             } else if (!publicIP) {
                 console.warn('⚠️ Could not detect public IP. Please set WG_HOST environment variable or configure manually in dashboard.')
             }

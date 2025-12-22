@@ -36,12 +36,26 @@ fi
 # Detect public IP if WG_HOST is 'auto'
 if [ "$PUBLIC_HOST" = "auto" ] || [ -z "$PUBLIC_HOST" ]; then
     echo "🌐 Detecting public IP..."
-    PUBLIC_IP=$(wget -qO- ifconfig.me 2>/dev/null || curl -s ifconfig.me 2>/dev/null || echo "")
-    if [ -n "$PUBLIC_IP" ]; then
+    
+    # Try api.ipify.org first (most reliable, always returns plain text IP)
+    PUBLIC_IP=$(curl -s --max-time 5 https://api.ipify.org 2>/dev/null || wget -qO- --timeout=5 https://api.ipify.org 2>/dev/null || echo "")
+    
+    # Validate IP format - should be like xxx.xxx.xxx.xxx
+    if ! echo "$PUBLIC_IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
+        echo "⚠️ api.ipify.org returned invalid response, trying icanhazip.com..."
+        PUBLIC_IP=$(curl -s --max-time 5 https://icanhazip.com 2>/dev/null || wget -qO- --timeout=5 https://icanhazip.com 2>/dev/null || echo "")
+        # Clean any trailing newlines
+        PUBLIC_IP=$(echo "$PUBLIC_IP" | tr -d '\n\r ')
+    fi
+    
+    # Final validation - must look like a valid IP (not HTML)
+    if echo "$PUBLIC_IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
         echo "🌐 Detected public IP: $PUBLIC_IP"
         export PUBLIC_HOST="$PUBLIC_IP"
     else
-        echo "⚠️ Could not detect public IP. Set WG_HOST in .env file."
+        echo "⚠️ Could not detect valid public IP. Set WG_HOST in .env file."
+        # Don't export invalid data
+        PUBLIC_IP=""
     fi
 fi
 
