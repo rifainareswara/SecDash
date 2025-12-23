@@ -197,7 +197,12 @@ export function getClientById(id: string): WGClient | null {
         allowed_ips: client.allowed_ips || [],
         enabled: client.enabled !== false,
         created_at: client.created_at || '',
-        updated_at: client.updated_at || ''
+        updated_at: client.updated_at || '',
+        // 2FA fields
+        require_2fa: client.require_2fa === true,
+        session_expires_at: client.session_expires_at,
+        totp_secret: client.totp_secret,
+        totp_enabled: client.totp_enabled === true
     }
 }
 
