@@ -9,11 +9,12 @@ Welcome to SecDash VPN! This guide will help you get started with managing your 
 1. [Getting Started](#1-getting-started)
 2. [Dashboard Overview](#2-dashboard-overview)
 3. [Managing VPN Clients](#3-managing-vpn-clients)
-4. [Connecting from Mobile](#4-connecting-from-mobile)
-5. [Server Configuration](#5-server-configuration)
-6. [Access Control (Traffic Monitor)](#6-access-control-traffic-monitor)
-7. [Other Features](#7-other-features)
-8. [Troubleshooting](#8-troubleshooting)
+4. [Two-Factor Authentication (2FA)](#4-two-factor-authentication-2fa)
+5. [Connecting from Mobile](#5-connecting-from-mobile)
+6. [Server Configuration](#6-server-configuration)
+7. [Access Control (Traffic Monitor)](#7-access-control-traffic-monitor)
+8. [Other Features](#8-other-features)
+9. [Troubleshooting](#9-troubleshooting)
 
 ---
 
@@ -85,7 +86,62 @@ For each client, you can:
 
 ---
 
-## 4. Connecting from Mobile
+## 4. Two-Factor Authentication (2FA)
+
+Protect VPN access with OTP verification. If a device is lost or stolen, VPN cannot be used without OTP code.
+
+### Admin 2FA Setup
+
+1. Go to **Admin Users** page (`/admin`)
+2. Find **Two-Factor Authentication** section
+3. Click **Setup 2FA**
+4. Scan QR code with **Google Authenticator**
+5. Enter 6-digit code to verify and enable
+
+### Creating 2FA-Protected Clients
+
+1. Go to **VPN Clients** page
+2. Click **Add Client**
+3. Check ✅ **Require 2FA to activate**
+4. Click **Create**
+
+### Session Status Badges
+
+| Badge | Meaning |
+|-------|---------|
+| 🔐 Setup Required | Need to configure authenticator |
+| 🔐 Inactive | 2FA configured, needs activation |
+| 🔐 Active (4h) | VPN session active for X hours |
+| No 2FA | Regular client, always active |
+
+### Self-Service 2FA (Per-Client)
+
+Each client can have their own authenticator:
+
+1. Client card shows **⚙️ Setup 2FA** button (yellow)
+2. Click it → QR code modal appears
+3. Scan QR with **device owner's** authenticator app
+4. Enter 6-digit code to verify
+5. Client can now activate their own sessions!
+
+### Activating VPN Session
+
+1. Client card shows **🔓 Activate** button
+2. Enter OTP from authenticator app
+3. Select duration (4h / 8h / 12h / 24h)
+4. Click **Activate**
+5. Now connect VPN on device!
+
+### Deactivating Session
+
+- Click **🔒 Deactivate** to immediately revoke VPN access
+- Sessions also auto-expire after duration ends
+
+**📚 For detailed documentation, see [2FA Guide](./2FA_GUIDE.md)**
+
+---
+
+## 5. Connecting from Mobile
 
 ### iOS / Android
 

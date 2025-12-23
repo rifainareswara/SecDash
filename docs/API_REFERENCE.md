@@ -151,6 +151,125 @@ Requires SMTP to be configured.
 
 ---
 
+## Two-Factor Authentication
+
+### Get 2FA Status
+
+```http
+GET /api/2fa/status
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "enabled": true
+}
+```
+
+### Setup 2FA (Admin)
+
+```http
+POST /api/2fa/setup
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "qrCode": "data:image/png;base64,...",
+  "secret": "JBSWY3DPEHPK3PXP",
+  "message": "Scan QR code with authenticator app"
+}
+```
+
+### Verify 2FA OTP
+
+```http
+POST /api/2fa/verify
+Content-Type: application/json
+
+{
+  "otp": "123456"
+}
+```
+
+### Disable 2FA
+
+```http
+POST /api/2fa/disable
+Content-Type: application/json
+
+{
+  "otp": "123456"
+}
+```
+
+### Setup Client 2FA (Self-Service)
+
+```http
+POST /api/clients/:id/2fa/setup
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "clientId": "abc123",
+  "clientName": "John's iPhone",
+  "qrCode": "data:image/png;base64,...",
+  "secret": "JBSWY3DPEHPK3PXP"
+}
+```
+
+### Verify Client 2FA
+
+```http
+POST /api/clients/:id/2fa/verify
+Content-Type: application/json
+
+{
+  "otp": "123456"
+}
+```
+
+### Activate Client Session
+
+```http
+POST /api/clients/activate
+Content-Type: application/json
+
+{
+  "client_id": "abc123",
+  "otp": "123456",
+  "duration_hours": 8
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "VPN session activated for 8 hours",
+  "client_id": "abc123",
+  "expires_at": "2025-12-23T23:00:00.000Z",
+  "duration_hours": 8
+}
+```
+
+### Deactivate Client Session
+
+```http
+POST /api/clients/deactivate
+Content-Type: application/json
+
+{
+  "client_id": "abc123"
+}
+```
+
+---
+
 ## Server Configuration
 
 ### Get Status (Dashboard Data)
