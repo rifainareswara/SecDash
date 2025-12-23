@@ -21,6 +21,9 @@ export interface WGClient {
     // 2FA session fields
     require_2fa?: boolean
     session_expires_at?: string  // ISO timestamp when session expires
+    // Per-client 2FA (self-service)
+    totp_secret?: string
+    totp_enabled?: boolean
 }
 
 export interface WGServerConfig {

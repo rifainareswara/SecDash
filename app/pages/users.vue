@@ -143,6 +143,7 @@ const handleDeactivate = async (clientId: string) => {
 
 const getSessionStatus = (client: any) => {
     if (!client.require_2fa) return { text: 'No 2FA', color: 'text-gray-400 bg-gray-500/20' }
+    if (!client.totp_enabled) return { text: 'Setup Required', color: 'text-yellow-400 bg-yellow-500/20' }
     if (client.session_expires_at) {
         const expires = new Date(client.session_expires_at)
         if (expires > new Date()) {
@@ -151,6 +152,49 @@ const getSessionStatus = (client: any) => {
         }
     }
     return { text: 'Inactive', color: 'text-red-400 bg-red-500/20' }
+}
+
+// Client 2FA Setup state
+const showClientSetupModal = ref(false)
+const setupClient = ref<{ id: string; name: string } | null>(null)
+const clientSetupData = ref<{ qrCode: string; secret: string } | null>(null)
+const clientSetupOtp = ref('')
+const settingUpClient = ref(false)
+
+const openClientSetupModal = async (client: any) => {
+    setupClient.value = { id: client.id, name: client.name }
+    settingUpClient.value = true
+    clientSetupOtp.value = ''
+    try {
+        const response = await $fetch<{ success: boolean; qrCode: string; secret: string }>(`/api/clients/${client.id}/2fa/setup`, { method: 'POST' })
+        clientSetupData.value = { qrCode: response.qrCode, secret: response.secret }
+        showClientSetupModal.value = true
+    } catch (err: any) {
+        alert(err.data?.message || 'Failed to setup 2FA')
+    } finally {
+        settingUpClient.value = false
+    }
+}
+
+const verifyClientSetup = async () => {
+    if (!setupClient.value || clientSetupOtp.value.length !== 6) return
+    settingUpClient.value = true
+    try {
+        await $fetch(`/api/clients/${setupClient.value.id}/2fa/verify`, {
+            method: 'POST',
+            body: { otp: clientSetupOtp.value }
+        })
+        showClientSetupModal.value = false
+        setupClient.value = null
+        clientSetupData.value = null
+        clientSetupOtp.value = ''
+        await fetchClients()
+        alert('2FA enabled for this client!')
+    } catch (err: any) {
+        alert(err.data?.message || 'Invalid OTP code')
+    } finally {
+        settingUpClient.value = false
+    }
 }
 </script>
 
@@ -216,14 +260,25 @@ const getSessionStatus = (client: any) => {
             </div>
             
             <div class="flex justify-between gap-2 mt-4 pt-4 border-t border-surface-highlight">
-                <div v-if="client.require_2fa">
+                <div v-if="client.require_2fa" class="flex gap-2">
+                    <!-- Setup 2FA button - shown when client needs to configure authenticator -->
                     <button 
-                        v-if="getSessionStatus(client).text === 'Inactive'"
+                        v-if="!client.totp_enabled"
+                        @click="openClientSetupModal(client)" 
+                        :disabled="settingUpClient"
+                        class="px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-xs font-medium transition-colors"
+                    >
+                        ⚙️ Setup 2FA
+                    </button>
+                    <!-- Activate button - shown when 2FA is configured but session inactive -->
+                    <button 
+                        v-else-if="getSessionStatus(client).text === 'Inactive'"
                         @click="openActivateModal(client)" 
                         class="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-colors"
                     >
                         🔓 Activate
                     </button>
+                    <!-- Deactivate button - shown when session is active -->
                     <button 
                         v-else
                         @click="handleDeactivate(client.id)" 
@@ -344,6 +399,51 @@ const getSessionStatus = (client: any) => {
                     class="px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-400 disabled:opacity-50"
                 >
                     {{ activating ? 'Activating...' : 'Activate' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client 2FA Setup Modal -->
+    <div v-if="showClientSetupModal && setupClient && clientSetupData" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="glass-panel p-6 rounded-xl w-full max-w-md m-4">
+            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-yellow-400">qr_code_2</span>
+                Setup 2FA for {{ setupClient.name }}
+            </h3>
+            
+            <div class="space-y-4">
+                <p class="text-text-secondary text-sm">Scan this QR code with Google Authenticator to enable self-service VPN activation:</p>
+                
+                <div class="flex justify-center p-4 bg-white rounded-lg">
+                    <img :src="clientSetupData.qrCode" alt="2FA QR Code" class="w-48 h-48">
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-xs text-text-secondary mb-1">Or enter manually:</p>
+                    <code class="text-xs text-primary bg-surface px-2 py-1 rounded break-all">{{ clientSetupData.secret }}</code>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-text-secondary mb-1">Enter 6-digit code to verify:</label>
+                    <input 
+                        v-model="clientSetupOtp" 
+                        type="text" 
+                        maxlength="6" 
+                        placeholder="000000"
+                        class="w-full bg-surface border border-surface-highlight rounded-lg px-4 py-3 text-white text-center text-2xl font-mono tracking-[0.5em] focus:outline-none focus:border-primary"
+                    >
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6">
+                <button @click="showClientSetupModal = false; setupClient = null; clientSetupData = null" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
+                <button 
+                    @click="verifyClientSetup" 
+                    :disabled="settingUpClient || clientSetupOtp.length !== 6"
+                    class="px-4 py-2 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50"
+                >
+                    {{ settingUpClient ? 'Verifying...' : 'Verify & Enable' }}
                 </button>
             </div>
         </div>

@@ -22,49 +22,59 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    // Get current admin user from session
-    const cookies = parseCookies(event)
-    const sessionId = cookies.session
-
-    let username = 'admin' // fallback
-    if (sessionId && sessions.has(sessionId)) {
-        const session = sessions.get(sessionId)!
-        if (session.expiresAt > Date.now()) {
-            username = session.username
-        }
-    }
-
-    const adminUser = getAdminUser(username)
-    if (!adminUser) {
-        throw createError({
-            statusCode: 401,
-            statusMessage: 'Admin user not found'
-        })
-    }
-
-    // Check if admin has 2FA enabled
-    if (!adminUser.totp_enabled || !adminUser.totp_secret) {
-        throw createError({
-            statusCode: 400,
-            statusMessage: 'Admin 2FA is not enabled. Enable 2FA first in Admin settings.'
-        })
-    }
-
-    // Verify OTP
-    const isValid = verifyTOTP(adminUser.totp_secret, otp)
-    if (!isValid) {
-        throw createError({
-            statusCode: 401,
-            statusMessage: 'Invalid OTP code'
-        })
-    }
-
-    // Get client
+    // Get client first
     const client = getClientById(client_id)
     if (!client) {
         throw createError({
             statusCode: 404,
             statusMessage: 'Client not found'
+        })
+    }
+
+    // Check if client requires 2FA
+    if (!client.require_2fa) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'This client does not require 2FA activation'
+        })
+    }
+
+    let isValid = false
+    let totpSource = 'none'
+
+    // Priority 1: Use client's own TOTP if enabled (self-service)
+    if (client.totp_enabled && client.totp_secret) {
+        isValid = verifyTOTP(client.totp_secret, otp)
+        totpSource = 'client'
+    } else {
+        // Priority 2: Fallback to admin's TOTP
+        const cookies = parseCookies(event)
+        const sessionId = cookies.session
+
+        let username = 'admin'
+        if (sessionId && sessions.has(sessionId)) {
+            const session = sessions.get(sessionId)!
+            if (session.expiresAt > Date.now()) {
+                username = session.username
+            }
+        }
+
+        const adminUser = getAdminUser(username)
+        if (adminUser?.totp_enabled && adminUser?.totp_secret) {
+            isValid = verifyTOTP(adminUser.totp_secret, otp)
+            totpSource = 'admin'
+        } else {
+            throw createError({
+                statusCode: 400,
+                statusMessage: 'No 2FA configured. Either setup client 2FA or enable admin 2FA.'
+            })
+        }
+    }
+
+    if (!isValid) {
+        throw createError({
+            statusCode: 401,
+            statusMessage: `Invalid OTP code (using ${totpSource} authenticator)`
         })
     }
 
