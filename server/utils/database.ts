@@ -18,6 +18,9 @@ export interface WGClient {
     enabled: boolean
     created_at: string
     updated_at: string
+    // 2FA session fields
+    require_2fa?: boolean
+    session_expires_at?: string  // ISO timestamp when session expires
 }
 
 export interface WGServerConfig {
@@ -56,6 +59,9 @@ export interface AdminUser {
     password_hash: string
     admin: boolean
     created_at?: string
+    // 2FA fields
+    totp_secret?: string
+    totp_enabled?: boolean
 }
 
 export interface WoLHost {
@@ -309,7 +315,9 @@ export function getAdminUser(username: string): AdminUser | null {
         username: user.username || username,
         password_hash: user.password_hash || '',
         admin: user.admin !== false,
-        created_at: user.created_at || ''
+        created_at: user.created_at || '',
+        totp_secret: user.totp_secret,
+        totp_enabled: user.totp_enabled === true
     }
 }
 

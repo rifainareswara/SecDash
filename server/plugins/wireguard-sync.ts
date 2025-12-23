@@ -1,4 +1,4 @@
-import { getClients, getServerConfig, updateServerConfig, getGlobalSettings, updateGlobalSettings } from '../utils/database'
+import { getClients, getServerConfig, updateServerConfig, getGlobalSettings, updateGlobalSettings, updateClient, WGClient } from '../utils/database'
 import { execSync } from 'child_process'
 
 export default defineNitroPlugin(async (nitroApp) => {
@@ -14,6 +14,14 @@ export default defineNitroPlugin(async (nitroApp) => {
 
     // Then sync peers
     await syncWireGuardPeers()
+
+    // Check for expired 2FA sessions
+    await checkExpiredSessions()
+
+    // Schedule periodic session check (every 5 minutes)
+    setInterval(async () => {
+        await checkExpiredSessions()
+    }, 5 * 60 * 1000)
 })
 
 /**
@@ -328,3 +336,61 @@ function getServerAddress(addresses: string[]): string {
     return parts.join('.')
 }
 
+/**
+ * Check for expired 2FA sessions and deactivate those clients
+ */
+async function checkExpiredSessions() {
+    try {
+        const clients = getClients()
+        const now = new Date()
+        let expiredCount = 0
+
+        for (const client of clients) {
+            // Skip clients that don't require 2FA
+            if (!client.require_2fa) continue
+
+            // Check if session has expired
+            if (client.session_expires_at) {
+                const expiresAt = new Date(client.session_expires_at)
+                if (expiresAt < now) {
+                    console.log(`[2FA] Session expired for client ${client.name} (${client.id})`)
+
+                    // Update client to disable and clear session
+                    updateClient(client.id, {
+                        enabled: false,
+                        session_expires_at: undefined
+                    })
+
+                    // Remove peer from WireGuard
+                    try {
+                        execSync(`wg set wg0 peer "${client.public_key}" remove`, { stdio: 'pipe' })
+                    } catch (e) {
+                        // Ignore - might already be removed
+                    }
+
+                    expiredCount++
+                }
+            } else if (client.enabled) {
+                // 2FA required but no session - disable it
+                console.log(`[2FA] Client ${client.name} requires 2FA but has no session, disabling...`)
+                updateClient(client.id, {
+                    enabled: false
+                })
+
+                try {
+                    execSync(`wg set wg0 peer "${client.public_key}" remove`, { stdio: 'pipe' })
+                } catch (e) {
+                    // Ignore
+                }
+
+                expiredCount++
+            }
+        }
+
+        if (expiredCount > 0) {
+            console.log(`[2FA] Deactivated ${expiredCount} expired sessions`)
+        }
+    } catch (error) {
+        console.error('[2FA] Error checking expired sessions:', error)
+    }
+}
