@@ -476,10 +476,15 @@ export function getClientConfig(clientId: string): string {
     // Build the config string
     const presharedKeyLine = client.preshared_key ? `PresharedKey = ${client.preshared_key}\n` : ''
 
+    // Handle dns_servers as string or array
+    const dnsServers = Array.isArray(globalSettings.dns_servers)
+        ? globalSettings.dns_servers.join(',')
+        : String(globalSettings.dns_servers || '1.1.1.1').replace(/\s+/g, '')
+
     const config = `[Interface]
 PrivateKey = ${privateKey}
 Address = ${client.allocated_ips.join(',')}
-DNS = ${globalSettings.dns_servers.join(',')}
+DNS = ${dnsServers}
 MTU = ${globalSettings.mtu}
 
 [Peer]
