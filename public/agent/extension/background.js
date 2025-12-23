@@ -73,16 +73,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (message.type === 'getConfig') {
         sendResponse(config);
     } else if (message.type === 'testConnection') {
-        testConnection().then(result => sendResponse(result));
+        testConnection(message.url).then(result => sendResponse(result));
         return true; // Keep channel open for async response
     }
 });
 
-async function testConnection() {
-    if (!config.serverUrl) return { success: false, error: 'No server URL configured' };
+async function testConnection(urlOverride) {
+    const targetUrl = urlOverride || config.serverUrl;
+    if (!targetUrl) return { success: false, error: 'No server URL configured' };
 
     try {
-        const response = await fetch(config.serverUrl + '/api/activity-logs?limit=1');
+        const response = await fetch(targetUrl + '/api/activity-logs?limit=1');
         const data = await response.json();
         return { success: data.success, message: 'Connected successfully' };
     } catch (error) {

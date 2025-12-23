@@ -92,7 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
         testBtn.textContent = 'Testing...';
         testBtn.disabled = true;
 
-        chrome.runtime.sendMessage({ type: 'testConnection' }, (response) => {
+        chrome.runtime.sendMessage({
+            type: 'testConnection',
+            url: config.serverUrl
+        }, (response) => {
             testBtn.textContent = 'Test Connection';
             testBtn.disabled = false;
 
