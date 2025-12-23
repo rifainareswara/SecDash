@@ -88,10 +88,36 @@ User + Authenticator → OTP Verified → VPN Active (limited time)
 Session Expires → Auto Deactivate → Requires New OTP
 ```
 
+## Self-Service 2FA (Per-Client)
+
+Each VPN client can have their own authenticator app, enabling users to activate their own sessions without needing the admin's OTP.
+
+### Setup Per-Client 2FA
+
+1. Create a client with **🔐 Require 2FA to activate** enabled
+2. Client card will show **🔐 Setup Required** status
+3. Click **⚙️ Setup 2FA** on the client card
+4. Scan the QR code with the **device owner's** authenticator app
+5. Enter 6-digit code to verify and enable
+
+### Self-Service Activation
+
+Once 2FA is configured for a client:
+1. Client owner opens dashboard → `/users`
+2. Clicks **🔓 Activate** on their client card
+3. Enters OTP from **their own** authenticator app
+4. Session becomes active for selected duration
+
+### Priority Order
+
+When activating, the system checks:
+1. **Client's TOTP** (if enabled) - self-service
+2. **Admin's TOTP** (fallback) - admin-controlled
+
 ## Technical Details
 
 - TOTP uses 6-digit codes with 30-second period
 - 1-step window allowed for clock drift tolerance
 - Session expiry checked every 5 minutes by cron job
-- Secrets stored in admin user JSON file
-- Session state stored in client JSON files
+- Client secrets stored in client JSON files
+- Admin secret stored in admin user JSON file
