@@ -25,8 +25,17 @@ const editForm = reactive({
   confirmPassword: ''
 })
 
+// 2FA State
+const twoFactorStatus = ref({ enabled: false, hasSecret: false })
+const showSetup2FAModal = ref(false)
+const setup2FAData = ref<{ qrCode: string; secret: string } | null>(null)
+const otpCode = ref('')
+const loading2FA = ref(false)
+const disableOtpCode = ref('')
+
 onMounted(async () => {
   await fetchUsers()
+  await fetch2FAStatus()
 })
 
 async function fetchUsers() {
@@ -41,6 +50,67 @@ async function fetchUsers() {
     error.value = err.message || 'Failed to load users'
   } finally {
     loading.value = false
+  }
+}
+
+async function fetch2FAStatus() {
+  try {
+    const response = await $fetch<{ success: boolean; enabled: boolean; hasSecret: boolean }>('/api/2fa/status')
+    twoFactorStatus.value = { enabled: response.enabled, hasSecret: response.hasSecret }
+  } catch (err) {
+    console.error('Failed to fetch 2FA status:', err)
+  }
+}
+
+async function setup2FA() {
+  loading2FA.value = true
+  try {
+    const response = await $fetch<{ success: boolean; qrCode: string; secret: string }>('/api/2fa/setup', { method: 'POST' })
+    setup2FAData.value = { qrCode: response.qrCode, secret: response.secret }
+    showSetup2FAModal.value = true
+  } catch (err: any) {
+    alert(err.data?.message || 'Failed to setup 2FA')
+  } finally {
+    loading2FA.value = false
+  }
+}
+
+async function verify2FA() {
+  if (otpCode.value.length !== 6) {
+    alert('Please enter a 6-digit code')
+    return
+  }
+  loading2FA.value = true
+  try {
+    await $fetch('/api/2fa/verify', { method: 'POST', body: { otp: otpCode.value } })
+    twoFactorStatus.value.enabled = true
+    showSetup2FAModal.value = false
+    setup2FAData.value = null
+    otpCode.value = ''
+    alert('2FA enabled successfully!')
+  } catch (err: any) {
+    alert(err.data?.message || 'Invalid OTP code')
+  } finally {
+    loading2FA.value = false
+  }
+}
+
+async function disable2FA() {
+  if (disableOtpCode.value.length !== 6) {
+    alert('Please enter your current OTP code to disable 2FA')
+    return
+  }
+  if (!confirm('Are you sure you want to disable 2FA?')) return
+  loading2FA.value = true
+  try {
+    await $fetch('/api/2fa/disable', { method: 'POST', body: { otp: disableOtpCode.value } })
+    twoFactorStatus.value = { enabled: false, hasSecret: false }
+    disableOtpCode.value = ''
+    alert('2FA disabled')
+  } catch (err: any) {
+    alert(err.data?.message || 'Failed to disable 2FA')
+  } finally {
+    loading2FA.value = false
   }
 }
 
@@ -201,6 +271,61 @@ async function handleDeleteUser(username: string) {
       </table>
     </div>
 
+    <!-- 2FA Security Settings -->
+    <div class="glass-panel rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-blue-400">security</span>
+            Two-Factor Authentication
+          </h3>
+          <p class="text-sm text-text-secondary mt-1">Secure VPN client activation with TOTP</p>
+        </div>
+        <div v-if="twoFactorStatus.enabled" class="flex items-center gap-2 px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
+          <span class="material-symbols-outlined text-[16px]">check_circle</span>
+          Enabled
+        </div>
+        <div v-else class="flex items-center gap-2 px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-sm font-medium">
+          <span class="material-symbols-outlined text-[16px]">warning</span>
+          Not Configured
+        </div>
+      </div>
+
+      <div v-if="!twoFactorStatus.enabled" class="space-y-4">
+        <p class="text-text-secondary text-sm">
+          Enable 2FA to require OTP verification before activating VPN clients. This adds an extra layer of security if a device is lost or stolen.
+        </p>
+        <button 
+          @click="setup2FA" 
+          :disabled="loading2FA"
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-blue-400 text-black font-bold rounded-lg transition-colors"
+        >
+          <span class="material-symbols-outlined text-[18px]">qr_code_2</span>
+          {{ loading2FA ? 'Setting up...' : 'Setup 2FA' }}
+        </button>
+      </div>
+
+      <div v-else class="space-y-4">
+        <p class="text-green-400 text-sm">✅ 2FA is active. VPN clients with "Require 2FA" will need OTP verification to activate.</p>
+        <div class="flex items-center gap-3">
+          <input 
+            v-model="disableOtpCode" 
+            type="text" 
+            maxlength="6" 
+            placeholder="Enter OTP to disable"
+            class="w-32 bg-surface border border-surface-highlight rounded-lg px-3 py-2 text-white text-center font-mono tracking-widest focus:outline-none focus:border-primary"
+          >
+          <button 
+            @click="disable2FA" 
+            :disabled="loading2FA || disableOtpCode.length !== 6"
+            class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-medium rounded-lg transition-colors disabled:opacity-50"
+          >
+            Disable 2FA
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Add User Modal -->
     <div v-if="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div class="glass-panel p-6 rounded-xl w-full max-w-md m-4">
@@ -243,6 +368,51 @@ async function handleDeleteUser(username: string) {
         <div class="flex justify-end gap-3 mt-6">
           <button @click="showEditModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
           <button @click="handleEditUser" class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-blue-400">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2FA Setup Modal -->
+    <div v-if="showSetup2FAModal && setup2FAData" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+      <div class="glass-panel p-6 rounded-xl w-full max-w-md m-4">
+        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">qr_code_2</span>
+          Setup 2FA
+        </h3>
+        
+        <div class="space-y-4">
+          <p class="text-text-secondary text-sm">Scan this QR code with Google Authenticator or any TOTP app:</p>
+          
+          <div class="flex justify-center p-4 bg-white rounded-lg">
+            <img :src="setup2FAData.qrCode" alt="2FA QR Code" class="w-48 h-48">
+          </div>
+          
+          <div class="text-center">
+            <p class="text-xs text-text-secondary mb-1">Or enter manually:</p>
+            <code class="text-xs text-primary bg-surface px-2 py-1 rounded break-all">{{ setup2FAData.secret }}</code>
+          </div>
+          
+          <div>
+            <label class="block text-sm text-text-secondary mb-1">Enter 6-digit code to verify:</label>
+            <input 
+              v-model="otpCode" 
+              type="text" 
+              maxlength="6" 
+              placeholder="000000"
+              class="w-full bg-surface border border-surface-highlight rounded-lg px-4 py-3 text-white text-center text-2xl font-mono tracking-[0.5em] focus:outline-none focus:border-primary"
+            >
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-3 mt-6">
+          <button @click="showSetup2FAModal = false; setup2FAData = null; otpCode = ''" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
+          <button 
+            @click="verify2FA" 
+            :disabled="loading2FA || otpCode.length !== 6"
+            class="px-4 py-2 bg-primary text-black font-bold rounded-lg hover:bg-blue-400 disabled:opacity-50"
+          >
+            {{ loading2FA ? 'Verifying...' : 'Verify & Enable' }}
+          </button>
         </div>
       </div>
     </div>

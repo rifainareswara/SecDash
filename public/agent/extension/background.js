@@ -1,11 +1,13 @@
 // Background Service Worker for Activity Tracker Extension
+// PIN-Protected Version
 
 // Default configuration
 let config = {
     serverUrl: '',
     clientId: '',
     enabled: true,
-    deviceName: ''
+    deviceName: '',
+    pinProtected: false // Whether PIN protection is enabled on server
 };
 
 // Load config from storage
@@ -20,7 +22,43 @@ chrome.storage.sync.get(['serverUrl', 'clientId', 'enabled', 'deviceName'], (res
         config.clientId = 'ext-' + Math.random().toString(36).substr(2, 12);
         chrome.storage.sync.set({ clientId: config.clientId });
     }
+
+    // Check if PIN protection is enabled on server
+    checkPinProtection();
 });
+
+// Check if server has PIN protection enabled
+async function checkPinProtection() {
+    if (!config.serverUrl) return;
+    
+    try {
+        const response = await fetch(config.serverUrl + '/api/agent-pin/status');
+        const data = await response.json();
+        config.pinProtected = data.hasPin || false;
+        chrome.storage.sync.set({ pinProtected: config.pinProtected });
+    } catch (error) {
+        console.log('Could not check PIN status:', error);
+    }
+}
+
+// Verify PIN with server
+async function verifyPin(pin) {
+    if (!config.serverUrl) {
+        return { success: false, error: 'No server URL configured' };
+    }
+
+    try {
+        const response = await fetch(config.serverUrl + '/api/agent-pin/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin })
+        });
+        const data = await response.json();
+        return { success: data.verified, message: data.message };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
 
 // Report activity to server
 async function reportActivity(tab) {
@@ -67,6 +105,12 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 // Listen for config updates from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'updateConfig') {
+        // If trying to disable and PIN protected, verify first
+        if (message.config.enabled === false && config.pinProtected && !message.pinVerified) {
+            sendResponse({ success: false, requirePin: true });
+            return;
+        }
+        
         config = { ...config, ...message.config };
         chrome.storage.sync.set(config);
         sendResponse({ success: true });
@@ -75,6 +119,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (message.type === 'testConnection') {
         testConnection(message.url).then(result => sendResponse(result));
         return true; // Keep channel open for async response
+    } else if (message.type === 'verifyPin') {
+        verifyPin(message.pin).then(result => sendResponse(result));
+        return true;
+    } else if (message.type === 'checkPinStatus') {
+        checkPinProtection().then(() => sendResponse({ pinProtected: config.pinProtected }));
+        return true;
     }
 });
 
@@ -85,7 +135,11 @@ async function testConnection(urlOverride) {
     try {
         const response = await fetch(targetUrl + '/api/activity-logs?limit=1');
         const data = await response.json();
-        return { success: data.success, message: 'Connected successfully' };
+        
+        // Also check PIN status
+        await checkPinProtection();
+        
+        return { success: data.success, message: 'Connected successfully', pinProtected: config.pinProtected };
     } catch (error) {
         return { success: false, error: error.message };
     }

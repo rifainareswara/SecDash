@@ -9,16 +9,42 @@ interface AccessLog {
   browser: string
   os: string
   device: string
+  deviceFingerprint: string
+  username?: string
+  sessionId?: string
+  acceptLanguage?: string
+  referer?: string
+}
+
+interface AccessLogStats {
+  totalRequests: number
+  uniqueIPs: number
+  uniqueDevices: number
+  topPaths: { path: string; count: number }[]
+  topDevices: { fingerprint: string; browser: string; os: string; device: string; count: number }[]
+  period: string
 }
 
 const logs = ref<AccessLog[]>([])
+const stats = ref<AccessLogStats | null>(null)
 const loading = ref(true)
 const autoRefresh = ref(true)
 const refreshInterval = ref<NodeJS.Timeout | null>(null)
 
+// Filters
+const filterIP = ref('')
+const filterFingerprint = ref('')
+const filterPath = ref('')
+
 async function fetchLogs() {
   try {
-    const response = await $fetch<{ success: boolean; logs: AccessLog[] }>('/api/access-logs?limit=100')
+    const params = new URLSearchParams()
+    params.append('limit', '200')
+    if (filterIP.value) params.append('ip', filterIP.value)
+    if (filterFingerprint.value) params.append('device_fingerprint', filterFingerprint.value)
+    if (filterPath.value) params.append('path', filterPath.value)
+
+    const response = await $fetch<{ success: boolean; logs: AccessLog[] }>(`/api/access-logs?${params.toString()}`)
     if (response.success) {
       logs.value = response.logs
     }
@@ -29,9 +55,20 @@ async function fetchLogs() {
   }
 }
 
+async function fetchStats() {
+  try {
+    const response = await $fetch<{ success: boolean; stats: AccessLogStats }>('/api/access-logs/stats?days=7')
+    if (response.success) {
+      stats.value = response.stats
+    }
+  } catch (err) {
+    console.error('Failed to fetch stats:', err)
+  }
+}
+
 function startAutoRefresh() {
   if (refreshInterval.value) clearInterval(refreshInterval.value)
-  refreshInterval.value = setInterval(fetchLogs, 2000) // Refresh every 2 seconds
+  refreshInterval.value = setInterval(fetchLogs, 3000)
 }
 
 function stopAutoRefresh() {
@@ -42,13 +79,26 @@ function stopAutoRefresh() {
 }
 
 async function clearLogs() {
-  if (!confirm('Clear all access logs?')) return
+  if (!confirm('Hapus semua access logs lama (lebih dari 30 hari)?')) return
   try {
-    await $fetch('/api/access-logs', { method: 'DELETE' })
-    logs.value = []
+    await $fetch('/api/access-logs', { method: 'DELETE', body: { days_to_keep: 0 } })
+    await fetchLogs()
+    await fetchStats()
   } catch (err) {
     console.error('Failed to clear logs:', err)
   }
+}
+
+function filterByFingerprint(fp: string) {
+  filterFingerprint.value = fp
+  fetchLogs()
+}
+
+function clearFilters() {
+  filterIP.value = ''
+  filterFingerprint.value = ''
+  filterPath.value = ''
+  fetchLogs()
 }
 
 watch(autoRefresh, (val) => {
@@ -58,6 +108,7 @@ watch(autoRefresh, (val) => {
 
 onMounted(() => {
   fetchLogs()
+  fetchStats()
   if (autoRefresh.value) startAutoRefresh()
 })
 
@@ -90,25 +141,27 @@ const getDeviceIcon = (device: string) => {
 
 // Format time
 const formatTime = (timestamp: string) => {
-  return new Date(timestamp).toLocaleTimeString('en-US', { 
-    hour12: false, 
-    hour: '2-digit', 
-    minute: '2-digit',
-    second: '2-digit'
-  })
+  const date = new Date(timestamp)
+  return {
+    time: date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    date: date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+  }
 }
 
 // Method color
 const getMethodColor = (method: string) => {
   const colors: Record<string, string> = {
     'GET': 'text-blue-400 bg-blue-500/20',
-    'POST': 'text-blue-400 bg-blue-500/20',
+    'POST': 'text-green-400 bg-green-500/20',
     'PUT': 'text-yellow-400 bg-yellow-500/20',
     'PATCH': 'text-orange-400 bg-orange-500/20',
     'DELETE': 'text-red-400 bg-red-500/20'
   }
   return colors[method] || 'text-blue-400 bg-blue-500/20'
 }
+
+// Short fingerprint display
+const shortFingerprint = (fp: string) => fp?.substring(0, 8) || '-'
 </script>
 
 <template>
@@ -120,7 +173,7 @@ const getMethodColor = (method: string) => {
           Access Logs
         </h2>
         <p class="text-text-secondary text-sm">
-          Real-time monitoring of all incoming requests.
+          Monitoring aktivitas akses dengan tracking device untuk audit dan forensik.
         </p>
       </div>
       <div class="flex items-center gap-3">
@@ -147,30 +200,82 @@ const getMethodColor = (method: string) => {
     <!-- Stats -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="glass-panel p-4 rounded-xl">
-        <p class="text-text-secondary text-xs">Total Requests</p>
-        <p class="text-white text-2xl font-bold">{{ logs.length }}</p>
+        <p class="text-text-secondary text-xs">Total Requests (7d)</p>
+        <p class="text-white text-2xl font-bold">{{ stats?.totalRequests || logs.length }}</p>
       </div>
       <div class="glass-panel p-4 rounded-xl">
         <p class="text-text-secondary text-xs">Unique IPs</p>
-        <p class="text-white text-2xl font-bold">{{ new Set(logs.map(l => l.ip)).size }}</p>
+        <p class="text-white text-2xl font-bold">{{ stats?.uniqueIPs || new Set(logs.map(l => l.ip)).size }}</p>
       </div>
       <div class="glass-panel p-4 rounded-xl">
-        <p class="text-text-secondary text-xs">Top Browser</p>
-        <p class="text-white text-lg font-bold">
-          {{ logs.length ? logs.reduce((acc, l) => {
-            acc[l.browser] = (acc[l.browser] || 0) + 1
-            return acc
-          }, {} as Record<string, number>)?.Chrome ? 'Chrome' : logs[0]?.browser || '-' : '-' }}
-        </p>
+        <p class="text-text-secondary text-xs">Unique Devices</p>
+        <p class="text-white text-2xl font-bold">{{ stats?.uniqueDevices || new Set(logs.map(l => l.deviceFingerprint)).size }}</p>
       </div>
       <div class="glass-panel p-4 rounded-xl">
         <p class="text-text-secondary text-xs">Live Status</p>
         <div class="flex items-center gap-2">
-          <div class="size-2 rounded-full" :class="autoRefresh ? 'bg-blue-400 animate-pulse' : 'bg-blue-500'"></div>
+          <div class="size-2 rounded-full" :class="autoRefresh ? 'bg-green-400 animate-pulse' : 'bg-gray-500'"></div>
           <span class="text-white text-lg font-bold">{{ autoRefresh ? 'Live' : 'Paused' }}</span>
         </div>
       </div>
     </div>
+
+    <!-- Filters -->
+    <div class="glass-panel p-4 rounded-xl">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="text-text-secondary text-sm font-medium">Filters:</span>
+        <input 
+          v-model="filterIP" 
+          @input="fetchLogs"
+          placeholder="IP Address" 
+          class="px-3 py-1.5 bg-surface text-white text-sm rounded-lg border border-surface-highlight focus:border-primary outline-none w-36"
+        >
+        <input 
+          v-model="filterFingerprint" 
+          @input="fetchLogs"
+          placeholder="Device ID" 
+          class="px-3 py-1.5 bg-surface text-white text-sm rounded-lg border border-surface-highlight focus:border-primary outline-none w-36"
+        >
+        <input 
+          v-model="filterPath" 
+          @input="fetchLogs"
+          placeholder="Path" 
+          class="px-3 py-1.5 bg-surface text-white text-sm rounded-lg border border-surface-highlight focus:border-primary outline-none w-40"
+        >
+        <button 
+          v-if="filterIP || filterFingerprint || filterPath"
+          @click="clearFilters"
+          class="px-3 py-1.5 bg-red-500/20 text-red-400 text-sm rounded-lg hover:bg-red-500/30 transition-colors"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Top Devices (collapse/expand) -->
+    <details class="glass-panel rounded-xl" v-if="stats?.topDevices?.length">
+      <summary class="px-4 py-3 cursor-pointer text-white font-semibold flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">devices</span>
+        Top Devices ({{ stats.topDevices.length }})
+      </summary>
+      <div class="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div 
+          v-for="device in stats.topDevices" 
+          :key="device.fingerprint"
+          class="bg-surface-highlight/50 p-3 rounded-lg cursor-pointer hover:bg-surface-highlight transition-colors"
+          @click="filterByFingerprint(device.fingerprint)"
+        >
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">{{ getDeviceIcon(device.device) }}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-white font-medium text-sm truncate">{{ device.browser }} / {{ device.os }}</p>
+              <p class="text-text-secondary text-xs font-mono">ID: {{ shortFingerprint(device.fingerprint) }}</p>
+            </div>
+            <span class="text-primary font-bold">{{ device.count }}</span>
+          </div>
+        </div>
+      </div>
+    </details>
 
     <!-- Loading -->
     <div v-if="loading" class="glass-panel p-8 rounded-xl text-center">
@@ -186,9 +291,10 @@ const getMethodColor = (method: string) => {
             <tr>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Time</th>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">IP Address</th>
+              <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Device ID</th>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Method</th>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Path</th>
-              <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Browser</th>
+              <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Browser/OS</th>
               <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Device</th>
             </tr>
           </thead>
@@ -199,7 +305,8 @@ const getMethodColor = (method: string) => {
               class="hover:bg-surface-highlight/40 transition-colors"
             >
               <td class="px-4 py-3 text-text-secondary font-mono text-xs">
-                {{ formatTime(log.timestamp) }}
+                <div>{{ formatTime(log.timestamp).time }}</div>
+                <div class="text-[10px] opacity-60">{{ formatTime(log.timestamp).date }}</div>
               </td>
               <td class="px-4 py-3">
                 <span class="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded text-xs">
@@ -207,11 +314,20 @@ const getMethodColor = (method: string) => {
                 </span>
               </td>
               <td class="px-4 py-3">
+                <button 
+                  @click="filterByFingerprint(log.deviceFingerprint)"
+                  class="font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded text-xs hover:bg-purple-500/20 transition-colors"
+                  :title="log.deviceFingerprint"
+                >
+                  {{ shortFingerprint(log.deviceFingerprint) }}
+                </button>
+              </td>
+              <td class="px-4 py-3">
                 <span class="px-2 py-0.5 rounded text-xs font-bold" :class="getMethodColor(log.method)">
                   {{ log.method }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-white font-mono text-xs max-w-[200px] truncate">
+              <td class="px-4 py-3 text-white font-mono text-xs max-w-[200px] truncate" :title="log.path">
                 {{ log.path }}
               </td>
               <td class="px-4 py-3">
@@ -229,8 +345,8 @@ const getMethodColor = (method: string) => {
               </td>
             </tr>
             <tr v-if="logs.length === 0">
-              <td colspan="6" class="px-4 py-8 text-center text-text-secondary">
-                No access logs yet. Requests will appear here in real-time.
+              <td colspan="7" class="px-4 py-8 text-center text-text-secondary">
+                Belum ada access logs. Request akan muncul di sini secara real-time.
               </td>
             </tr>
           </tbody>

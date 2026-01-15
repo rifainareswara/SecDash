@@ -10,17 +10,39 @@ const showAddModal = ref(false)
 const showQRModal = ref(false)
 const newClient = reactive({
   name: '',
-  email: ''
+  email: '',
+  require_2fa: false
 })
 const currentQR = ref<{ config: string, qrCode: string } | null>(null)
 
+// 2FA Activation state
+const showActivateModal = ref(false)
+const activatingClient = ref<{ id: string; name: string } | null>(null)
+const activateOtp = ref('')
+const activateDuration = ref(8)
+const activating = ref(false)
+
 const handleAddClient = async () => {
     if (!newClient.name) return
-    const success = await createClient(newClient.name, newClient.email)
-    if (success) {
-        showAddModal.value = false
-        newClient.name = ''
-        newClient.email = ''
+    try {
+        // Include require_2fa when creating client
+        const response = await $fetch<{ success: boolean }>('/api/clients', {
+            method: 'POST',
+            body: { 
+                name: newClient.name, 
+                email: newClient.email,
+                require_2fa: newClient.require_2fa
+            }
+        })
+        if (response.success) {
+            showAddModal.value = false
+            newClient.name = ''
+            newClient.email = ''
+            newClient.require_2fa = false
+            await fetchClients()
+        }
+    } catch (err: any) {
+        alert(err.data?.message || 'Failed to create client')
     }
 }
 
@@ -75,6 +97,105 @@ const downloadConfig = () => {
     a.click()
     URL.revokeObjectURL(url)
 }
+
+// 2FA Activation functions
+const openActivateModal = (client: any) => {
+    activatingClient.value = { id: client.id, name: client.name }
+    activateOtp.value = ''
+    activateDuration.value = 8
+    showActivateModal.value = true
+}
+
+const handleActivate = async () => {
+    if (!activatingClient.value || activateOtp.value.length !== 6) return
+    activating.value = true
+    try {
+        await $fetch('/api/clients/activate', {
+            method: 'POST',
+            body: {
+                client_id: activatingClient.value.id,
+                otp: activateOtp.value,
+                duration_hours: activateDuration.value
+            }
+        })
+        showActivateModal.value = false
+        activatingClient.value = null
+        await fetchClients()
+    } catch (err: any) {
+        alert(err.data?.message || 'Activation failed. Check OTP code.')
+    } finally {
+        activating.value = false
+    }
+}
+
+const handleDeactivate = async (clientId: string) => {
+    if (!confirm('Deactivate this client\'s VPN session?')) return
+    try {
+        await $fetch('/api/clients/deactivate', {
+            method: 'POST',
+            body: { client_id: clientId }
+        })
+        await fetchClients()
+    } catch (err: any) {
+        alert(err.data?.message || 'Failed to deactivate')
+    }
+}
+
+const getSessionStatus = (client: any) => {
+    if (!client.require_2fa) return { text: 'No 2FA', color: 'text-gray-400 bg-gray-500/20' }
+    if (!client.totp_enabled) return { text: 'Setup Required', color: 'text-yellow-400 bg-yellow-500/20' }
+    if (client.session_expires_at) {
+        const expires = new Date(client.session_expires_at)
+        if (expires > new Date()) {
+            const hoursLeft = Math.ceil((expires.getTime() - Date.now()) / 3600000)
+            return { text: `Active (${hoursLeft}h)`, color: 'text-green-400 bg-green-500/20' }
+        }
+    }
+    return { text: 'Inactive', color: 'text-red-400 bg-red-500/20' }
+}
+
+// Client 2FA Setup state
+const showClientSetupModal = ref(false)
+const setupClient = ref<{ id: string; name: string } | null>(null)
+const clientSetupData = ref<{ qrCode: string; secret: string } | null>(null)
+const clientSetupOtp = ref('')
+const settingUpClient = ref(false)
+
+const openClientSetupModal = async (client: any) => {
+    setupClient.value = { id: client.id, name: client.name }
+    settingUpClient.value = true
+    clientSetupOtp.value = ''
+    try {
+        const response = await $fetch<{ success: boolean; qrCode: string; secret: string }>(`/api/clients/${client.id}/2fa/setup`, { method: 'POST' })
+        clientSetupData.value = { qrCode: response.qrCode, secret: response.secret }
+        showClientSetupModal.value = true
+    } catch (err: any) {
+        alert(err.data?.message || 'Failed to setup 2FA')
+    } finally {
+        settingUpClient.value = false
+    }
+}
+
+const verifyClientSetup = async () => {
+    if (!setupClient.value || clientSetupOtp.value.length !== 6) return
+    settingUpClient.value = true
+    try {
+        await $fetch(`/api/clients/${setupClient.value.id}/2fa/verify`, {
+            method: 'POST',
+            body: { otp: clientSetupOtp.value }
+        })
+        showClientSetupModal.value = false
+        setupClient.value = null
+        clientSetupData.value = null
+        clientSetupOtp.value = ''
+        await fetchClients()
+        alert('2FA enabled for this client!')
+    } catch (err: any) {
+        alert(err.data?.message || 'Invalid OTP code')
+    } finally {
+        settingUpClient.value = false
+    }
+}
 </script>
 
 <template>
@@ -117,8 +238,13 @@ const downloadConfig = () => {
                             <p class="text-xs text-text-secondary/80 mt-0.5">{{ client.virtualIp || 'No IP' }}</p>
                         </div>
                     </div>
-                    <div class="px-2 py-1 rounded text-xs font-bold" :class="client.enabled ? 'bg-blue-500/20 text-blue-400' : 'bg-red-500/20 text-red-400'">
-                        {{ client.enabled ? 'Active' : 'Disabled' }}
+                    <div class="flex flex-col items-end gap-1">
+                        <div class="px-2 py-1 rounded text-xs font-bold" :class="client.enabled ? 'bg-blue-500/20 text-blue-400' : 'bg-red-500/20 text-red-400'">
+                            {{ client.enabled ? 'Active' : 'Disabled' }}
+                        </div>
+                        <div v-if="client.require_2fa" class="px-2 py-0.5 rounded text-xs font-medium" :class="getSessionStatus(client).color">
+                            🔐 {{ getSessionStatus(client).text }}
+                        </div>
                     </div>
                 </div>
                 <div class="text-sm text-text-secondary mt-3 space-y-1">
@@ -133,13 +259,42 @@ const downloadConfig = () => {
                 </div>
             </div>
             
-            <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-surface-highlight">
-                <button @click="handleShowConfig(client.id)" class="p-2 hover:bg-surface-highlight rounded-lg text-text-secondary hover:text-white transition-colors" title="QR Code">
-                    <span class="material-symbols-outlined">qr_code</span>
-                </button>
-                <button @click="handleDeleteClient(client.id, client.name)" class="p-2 hover:bg-red-500/20 rounded-lg text-text-secondary hover:text-red-400 transition-colors" title="Delete">
-                    <span class="material-symbols-outlined">delete</span>
-                </button>
+            <div class="flex justify-between gap-2 mt-4 pt-4 border-t border-surface-highlight">
+                <div v-if="client.require_2fa" class="flex gap-2">
+                    <!-- Setup 2FA button - shown when client needs to configure authenticator -->
+                    <button 
+                        v-if="!client.totp_enabled"
+                        @click="openClientSetupModal(client)" 
+                        :disabled="settingUpClient"
+                        class="px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-xs font-medium transition-colors"
+                    >
+                        ⚙️ Setup 2FA
+                    </button>
+                    <!-- Activate button - shown when 2FA is configured but session inactive -->
+                    <button 
+                        v-else-if="getSessionStatus(client).text === 'Inactive'"
+                        @click="openActivateModal(client)" 
+                        class="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-colors"
+                    >
+                        🔓 Activate
+                    </button>
+                    <!-- Deactivate button - shown when session is active -->
+                    <button 
+                        v-else
+                        @click="handleDeactivate(client.id)" 
+                        class="px-3 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg text-xs font-medium transition-colors"
+                    >
+                        🔒 Deactivate
+                    </button>
+                </div>
+                <div class="flex gap-2 ml-auto">
+                    <button @click="handleShowConfig(client.id)" class="p-2 hover:bg-surface-highlight rounded-lg text-text-secondary hover:text-white transition-colors" title="QR Code">
+                        <span class="material-symbols-outlined">qr_code</span>
+                    </button>
+                    <button @click="handleDeleteClient(client.id, client.name)" class="p-2 hover:bg-red-500/20 rounded-lg text-text-secondary hover:text-red-400 transition-colors" title="Delete">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -156,6 +311,13 @@ const downloadConfig = () => {
                 <div>
                     <label class="block text-sm text-text-secondary mb-1">Email <span class="text-xs text-gray-500">(Optional)</span></label>
                     <input v-model="newClient.email" type="email" class="w-full bg-surface border border-surface-highlight rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary" placeholder="user@example.com">
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-surface rounded-lg border border-surface-highlight">
+                    <input v-model="newClient.require_2fa" type="checkbox" id="require2fa" class="w-4 h-4 accent-primary">
+                    <label for="require2fa" class="text-sm text-white">
+                        🔐 Require 2FA to activate
+                        <span class="block text-xs text-text-secondary mt-0.5">Client must verify OTP before VPN access</span>
+                    </label>
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-6">
@@ -197,5 +359,94 @@ const downloadConfig = () => {
         @close="deleteModalOpen = false"
         @confirm="confirmDelete"
     />
+
+    <!-- 2FA Activation Modal -->
+    <div v-if="showActivateModal && activatingClient" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="glass-panel p-6 rounded-xl w-full max-w-sm m-4">
+            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-green-400">lock_open</span>
+                Activate VPN Session
+            </h3>
+            <p class="text-text-secondary text-sm mb-4">Enter your 2FA code to activate <strong class="text-white">{{ activatingClient.name }}</strong></p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-text-secondary mb-1">6-digit OTP Code</label>
+                    <input 
+                        v-model="activateOtp" 
+                        type="text" 
+                        maxlength="6" 
+                        placeholder="000000"
+                        class="w-full bg-surface border border-surface-highlight rounded-lg px-4 py-3 text-white text-center text-2xl font-mono tracking-[0.5em] focus:outline-none focus:border-primary"
+                    >
+                </div>
+                <div>
+                    <label class="block text-sm text-text-secondary mb-1">Session Duration</label>
+                    <select v-model="activateDuration" class="w-full bg-surface border border-surface-highlight rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary">
+                        <option :value="4">4 hours</option>
+                        <option :value="8">8 hours (default)</option>
+                        <option :value="12">12 hours</option>
+                        <option :value="24">24 hours</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6">
+                <button @click="showActivateModal = false" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
+                <button 
+                    @click="handleActivate" 
+                    :disabled="activating || activateOtp.length !== 6"
+                    class="px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-400 disabled:opacity-50"
+                >
+                    {{ activating ? 'Activating...' : 'Activate' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client 2FA Setup Modal -->
+    <div v-if="showClientSetupModal && setupClient && clientSetupData" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="glass-panel p-6 rounded-xl w-full max-w-md m-4">
+            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-yellow-400">qr_code_2</span>
+                Setup 2FA for {{ setupClient.name }}
+            </h3>
+            
+            <div class="space-y-4">
+                <p class="text-text-secondary text-sm">Scan this QR code with Google Authenticator to enable self-service VPN activation:</p>
+                
+                <div class="flex justify-center p-4 bg-white rounded-lg">
+                    <img :src="clientSetupData.qrCode" alt="2FA QR Code" class="w-48 h-48">
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-xs text-text-secondary mb-1">Or enter manually:</p>
+                    <code class="text-xs text-primary bg-surface px-2 py-1 rounded break-all">{{ clientSetupData.secret }}</code>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-text-secondary mb-1">Enter 6-digit code to verify:</label>
+                    <input 
+                        v-model="clientSetupOtp" 
+                        type="text" 
+                        maxlength="6" 
+                        placeholder="000000"
+                        class="w-full bg-surface border border-surface-highlight rounded-lg px-4 py-3 text-white text-center text-2xl font-mono tracking-[0.5em] focus:outline-none focus:border-primary"
+                    >
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6">
+                <button @click="showClientSetupModal = false; setupClient = null; clientSetupData = null" class="px-4 py-2 text-text-secondary hover:text-white">Cancel</button>
+                <button 
+                    @click="verifyClientSetup" 
+                    :disabled="settingUpClient || clientSetupOtp.length !== 6"
+                    class="px-4 py-2 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50"
+                >
+                    {{ settingUpClient ? 'Verifying...' : 'Verify & Enable' }}
+                </button>
+            </div>
+        </div>
+    </div>
   </div>
 </template>

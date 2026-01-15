@@ -65,6 +65,13 @@
             font-size: 12px;
             flex: 1;
         }
+        .protected-badge {
+            font-size: 10px;
+            background: #7c3aed;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
         .form-group {
             margin-bottom: 12px;
         }
@@ -105,6 +112,10 @@
         .toggle-switch.active {
             background: #3b82f6;
         }
+        .toggle-switch.locked {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
         .toggle-switch::after {
             content: '';
             position: absolute;
@@ -140,6 +151,12 @@
         .btn-secondary:hover {
             background: #4b5563;
         }
+        .btn-danger {
+            background: #dc2626;
+        }
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
         .info {
             font-size: 10px;
             color: #6b7280;
@@ -161,20 +178,69 @@
             background: #ef444420;
             color: #ef4444;
         }
+        /* PIN Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: #1e1e2e;
+            padding: 20px;
+            border-radius: 12px;
+            width: 280px;
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .modal-text {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 16px;
+        }
+        .pin-input {
+            letter-spacing: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .modal-buttons .btn {
+            flex: 1;
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="logo">🔒</div>
         <div>
-            <div class="title">Activity Tracker</div>
-            <div class="subtitle">VPN Dashboard</div>
+            <div class="title">SecDash Activity Tracker</div>
+            <div class="subtitle">PIN-Protected Monitoring</div>
         </div>
     </div>
 
     <div class="status">
         <div class="status-dot" id="statusDot"></div>
         <span class="status-text" id="statusText">Connecting...</span>
+        <span class="protected-badge" id="protectedBadge" style="display:none;">🔐 Protected</span>
     </div>
 
     <div class="form-group">
@@ -199,6 +265,20 @@
 
     <div class="info">
         <strong>Client ID:</strong> <span id="clientId">-</span>
+    </div>
+
+    <!-- PIN Modal -->
+    <div class="modal" id="pinModal">
+        <div class="modal-content">
+            <div class="modal-title">🔐 PIN Required</div>
+            <div class="modal-text">Enter admin PIN to disable tracking</div>
+            <input type="password" id="pinInput" class="pin-input" maxlength="10" placeholder="••••">
+            <div id="pinError" class="message error" style="display:none;"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="cancelPinBtn">Cancel</button>
+                <button class="btn" id="verifyPinBtn">Verify</button>
+            </div>
+        </div>
     </div>
 
     <script src="popup.js"></script>

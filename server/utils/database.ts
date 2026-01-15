@@ -18,6 +18,12 @@ export interface WGClient {
     enabled: boolean
     created_at: string
     updated_at: string
+    // 2FA session fields
+    require_2fa?: boolean
+    session_expires_at?: string  // ISO timestamp when session expires
+    // Per-client 2FA (self-service)
+    totp_secret?: string
+    totp_enabled?: boolean
 }
 
 export interface WGServerConfig {
@@ -56,6 +62,9 @@ export interface AdminUser {
     password_hash: string
     admin: boolean
     created_at?: string
+    // 2FA fields
+    totp_secret?: string
+    totp_enabled?: boolean
 }
 
 export interface WoLHost {
@@ -64,6 +73,14 @@ export interface WoLHost {
     mac_address: string
     ip_address?: string
     created_at?: string
+}
+
+// Agent PIN configuration for protected monitoring
+export interface AgentPinConfig {
+    pin_hash: string           // SHA-256 hash of the PIN
+    enabled: boolean           // Is PIN protection enabled
+    created_at: string
+    updated_at: string
 }
 
 function readJsonFile<T>(filePath: string): T | null {
@@ -188,7 +205,12 @@ export function getClientById(id: string): WGClient | null {
         allowed_ips: client.allowed_ips || [],
         enabled: client.enabled !== false,
         created_at: client.created_at || '',
-        updated_at: client.updated_at || ''
+        updated_at: client.updated_at || '',
+        // 2FA fields
+        require_2fa: client.require_2fa === true,
+        session_expires_at: client.session_expires_at,
+        totp_secret: client.totp_secret,
+        totp_enabled: client.totp_enabled === true
     }
 }
 
@@ -309,7 +331,9 @@ export function getAdminUser(username: string): AdminUser | null {
         username: user.username || username,
         password_hash: user.password_hash || '',
         admin: user.admin !== false,
-        created_at: user.created_at || ''
+        created_at: user.created_at || '',
+        totp_secret: user.totp_secret,
+        totp_enabled: user.totp_enabled === true
     }
 }
 
@@ -460,10 +484,15 @@ export function getClientConfig(clientId: string): string {
     // Build the config string
     const presharedKeyLine = client.preshared_key ? `PresharedKey = ${client.preshared_key}\n` : ''
 
+    // Handle dns_servers as string or array
+    const dnsServers = Array.isArray(globalSettings.dns_servers)
+        ? globalSettings.dns_servers.join(',')
+        : String(globalSettings.dns_servers || '1.1.1.1').replace(/\s+/g, '')
+
     const config = `[Interface]
 PrivateKey = ${privateKey}
 Address = ${client.allocated_ips.join(',')}
-DNS = ${globalSettings.dns_servers.join(',')}
+DNS = ${dnsServers}
 MTU = ${globalSettings.mtu}
 
 [Peer]
@@ -865,6 +894,12 @@ export interface BrowsingActivity {
     blocked?: boolean           // Was this access blocked
     timestamp: string
     duration?: number           // Time spent in seconds
+    // Device context for forensic tracking
+    ip?: string                 // Source IP address
+    browser?: string            // Browser name
+    os?: string                 // Operating system
+    deviceType?: string         // Desktop, Mobile, Tablet
+    deviceFingerprint?: string  // Unique device identifier
 }
 
 export interface ActivityStats {
@@ -927,6 +962,12 @@ export function logBrowsingActivity(data: {
     title?: string
     source: 'agent' | 'dns'
     duration?: number
+    // Device context
+    ip?: string
+    browser?: string
+    os?: string
+    deviceType?: string
+    deviceFingerprint?: string
 }): BrowsingActivity {
     ensureActivityDirs()
 
@@ -944,7 +985,13 @@ export function logBrowsingActivity(data: {
         source: data.source,
         blocked: false,
         timestamp: new Date().toISOString(),
-        duration: data.duration
+        duration: data.duration,
+        // Device context
+        ip: data.ip,
+        browser: data.browser,
+        os: data.os,
+        deviceType: data.deviceType,
+        deviceFingerprint: data.deviceFingerprint
     }
 
     // Store in daily log files for easier management
@@ -1110,4 +1157,43 @@ export function cleanupActivityLogs(daysToKeep: number = 30): number {
     }
 
     return deletedCount
+}
+
+// ==========================================
+// AGENT PIN CONFIG
+// ==========================================
+
+const AGENT_CONFIG_FILE = join(DB_PATH, 'server', 'agent_config.json')
+
+export function getAgentPinConfig(): AgentPinConfig | null {
+    return readJsonFile<AgentPinConfig>(AGENT_CONFIG_FILE)
+}
+
+export function setAgentPinConfig(pin: string): boolean {
+    const pinHash = createHash('sha256').update(pin).digest('hex')
+    const config: AgentPinConfig = {
+        pin_hash: pinHash,
+        enabled: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    }
+    return writeJsonFile(AGENT_CONFIG_FILE, config)
+}
+
+export function verifyAgentPin(pin: string): boolean {
+    const config = getAgentPinConfig()
+    if (!config || !config.enabled) {
+        return true // No PIN configured, allow access
+    }
+    const pinHash = createHash('sha256').update(pin).digest('hex')
+    return pinHash === config.pin_hash
+}
+
+export function disableAgentPin(): boolean {
+    const config = getAgentPinConfig()
+    if (!config) return true
+    
+    config.enabled = false
+    config.updated_at = new Date().toISOString()
+    return writeJsonFile(AGENT_CONFIG_FILE, config)
 }

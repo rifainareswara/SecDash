@@ -16,6 +16,10 @@ export interface VpnClient {
     transferTx?: number
     createdAt?: string
     updatedAt?: string
+    // 2FA fields
+    require_2fa?: boolean
+    session_expires_at?: string
+    totp_enabled?: boolean
 }
 
 export interface ServerStats {
