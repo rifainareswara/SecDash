@@ -25,14 +25,14 @@ Fitur **Activity Monitoring** memungkinkan Anda melacak aktivitas browsing dari 
 
 ### Fitur Utama
 
-| Fitur | Deskripsi |
-|-------|-----------|
-| Real-time Feed | Lihat aktivitas browsing secara langsung |
-| Domain Tracking | Catat semua domain yang dikunjungi |
-| URL Logging | Log URL lengkap untuk analisis detail |
+| Fitur               | Deskripsi                                        |
+| ------------------- | ------------------------------------------------ |
+| Real-time Feed      | Lihat aktivitas browsing secara langsung         |
+| Domain Tracking     | Catat semua domain yang dikunjungi               |
+| URL Logging         | Log URL lengkap untuk analisis detail            |
 | Auto-Categorization | Kategorisasi otomatis (social, video, news, dll) |
-| Statistics | Statistik browsing 24h/7d/30d |
-| Filtering | Filter by domain, category, client |
+| Statistics          | Statistik browsing 24h/7d/30d                    |
+| Filtering           | Filter by domain, category, client               |
 
 ### Arsitektur
 
@@ -59,25 +59,25 @@ Ada beberapa cara untuk menginstal agent tracker pada perangkat:
 Cara paling sederhana untuk testing. Buka browser console (F12 → Console) dan paste:
 
 ```javascript
-(function() {
-  const SERVER = 'https://your-dashboard-url.com';
-  const CLIENT_ID = 'device-' + Math.random().toString(36).substr(2, 9);
-  
+(function () {
+  const SERVER = "https://your-dashboard-url.com";
+  const CLIENT_ID = "device-" + Math.random().toString(36).substr(2, 9);
+
   function report() {
-    fetch(SERVER + '/api/activity-agent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch(SERVER + "/api/activity-agent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         url: location.href,
         title: document.title,
-        client_id: CLIENT_ID
-      })
+        client_id: CLIENT_ID,
+      }),
     }).catch(() => {});
   }
-  
+
   report();
-  window.addEventListener('popstate', report);
-  console.log('✅ Activity Tracker Active - ID:', CLIENT_ID);
+  window.addEventListener("popstate", report);
+  console.log("✅ Activity Tracker Active - ID:", CLIENT_ID);
 })();
 ```
 
@@ -99,8 +99,8 @@ Tambahkan ke halaman atau inject via proxy:
 
 ```html
 <script>
-  window.ACTIVITY_TRACKER_SERVER = 'https://your-dashboard.com';
-  window.ACTIVITY_TRACKER_DEVICE_NAME = 'Laptop Kantor';
+  window.ACTIVITY_TRACKER_SERVER = "https://your-dashboard.com";
+  window.ACTIVITY_TRACKER_DEVICE_NAME = "Laptop Kantor";
 </script>
 <script src="https://your-dashboard.com/agent/activity-tracker.js"></script>
 ```
@@ -127,12 +127,12 @@ Atau gunakan modal **Install Agent** di dashboard untuk mendapatkan bookmarklet 
 
 ### Panel Statistik
 
-| Panel | Deskripsi |
-|-------|-----------|
-| Total Visits | Jumlah total kunjungan halaman |
+| Panel          | Deskripsi                          |
+| -------------- | ---------------------------------- |
+| Total Visits   | Jumlah total kunjungan halaman     |
 | Unique Domains | Jumlah domain unik yang dikunjungi |
-| Top Category | Kategori paling banyak dikunjungi |
-| Time Period | Pilih periode: 24h, 7d, atau 30d |
+| Top Category   | Kategori paling banyak dikunjungi  |
+| Time Period    | Pilih periode: 24h, 7d, atau 30d   |
 
 ### Top Domains
 
@@ -142,17 +142,17 @@ Menampilkan 10 domain paling sering dikunjungi beserta jumlah kunjungan.
 
 Breakdown aktivitas berdasarkan kategori:
 
-| Kategori | Contoh Domain |
-|----------|---------------|
-| 📱 Social | facebook.com, instagram.com, x.com |
-| 🎬 Video | youtube.com, netflix.com, twitch.tv |
-| 📰 News | detik.com, kompas.com, bbc.com |
-| 🛒 Shopping | tokopedia.com, shopee.co.id |
-| 💼 Work | slack.com, github.com, notion.so |
-| 📧 Email | gmail.com, outlook.com |
-| 🔍 Search | google.com, bing.com |
-| 🎮 Gaming | steam.com, roblox.com |
-| 📂 Other | Domain lainnya |
+| Kategori    | Contoh Domain                       |
+| ----------- | ----------------------------------- |
+| 📱 Social   | facebook.com, instagram.com, x.com  |
+| 🎬 Video    | youtube.com, netflix.com, twitch.tv |
+| 📰 News     | detik.com, kompas.com, bbc.com      |
+| 🛒 Shopping | tokopedia.com, shopee.co.id         |
+| 💼 Work     | slack.com, github.com, notion.so    |
+| 📧 Email    | gmail.com, outlook.com              |
+| 🔍 Search   | google.com, bing.com                |
+| 🎮 Gaming   | steam.com, roblox.com               |
+| 📂 Other    | Domain lainnya                      |
 
 ### Filter & Search
 
@@ -162,6 +162,7 @@ Breakdown aktivitas berdasarkan kategori:
 ### Real-time Feed
 
 Daftar aktivitas terbaru dengan informasi:
+
 - Domain yang dikunjungi
 - Page title
 - Full URL
@@ -187,13 +188,26 @@ X-Client-Id: device-abc123
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "logged_count": 1,
-  "timestamp": "2025-12-22T11:00:00.000Z"
+  "timestamp": "2025-12-22T11:00:00.000Z",
+  "device": {
+    "fingerprint": "ea70495e0c3d",
+    "browser": "Chrome",
+    "os": "macOS",
+    "type": "Desktop",
+    "vpn_client": {
+      "id": "abc123",
+      "name": "rnrifai"
+    }
+  }
 }
 ```
+
+> **New!** Server otomatis mendeteksi device info dari request headers dan VPN client dari IP address.
 
 ### Get Activity Logs
 
@@ -203,16 +217,17 @@ GET /api/activity-logs?limit=100&category=social&domain=facebook
 
 **Query Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| limit | number | Max records to return (default: 100) |
-| client_id | string | Filter by client ID |
-| category | string | Filter by category |
-| domain | string | Filter by domain (partial match) |
-| start_date | string | ISO date start range |
-| end_date | string | ISO date end range |
+| Parameter  | Type   | Description                          |
+| ---------- | ------ | ------------------------------------ |
+| limit      | number | Max records to return (default: 100) |
+| client_id  | string | Filter by client ID                  |
+| category   | string | Filter by category                   |
+| domain     | string | Filter by domain (partial match)     |
+| start_date | string | ISO date start range                 |
+| end_date   | string | ISO date end range                   |
 
-**Response:**
+**Response (with device tracking):**
+
 ```json
 {
   "success": true,
@@ -226,7 +241,12 @@ GET /api/activity-logs?limit=100&category=social&domain=facebook
       "title": "Facebook",
       "category": "social",
       "source": "agent",
-      "timestamp": "2025-12-22T11:00:00.000Z"
+      "timestamp": "2025-12-22T11:00:00.000Z",
+      "ip": "10.252.1.5",
+      "browser": "Chrome",
+      "os": "macOS",
+      "deviceType": "Desktop",
+      "deviceFingerprint": "ea70495e0c3d"
     }
   ],
   "total": 1
@@ -239,55 +259,92 @@ GET /api/activity-logs?limit=100&category=social&domain=facebook
 GET /api/activity-logs?stats=true&period=24h
 ```
 
-**Query Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| stats | boolean | Set to `true` for stats mode |
-| period | string | `24h`, `7d`, or `30d` |
-| client_id | string | Filter stats by client |
-
 **Response:**
+
 ```json
 {
   "success": true,
   "stats": {
     "total_visits": 150,
     "unique_domains": 25,
-    "top_domains": [
-      { "domain": "google.com", "count": 45 },
-      { "domain": "youtube.com", "count": 30 }
-    ],
-    "top_categories": [
-      { "category": "search", "count": 45 },
-      { "category": "video", "count": 30 }
-    ],
-    "visits_by_hour": [
-      { "hour": 0, "count": 5 },
-      { "hour": 1, "count": 2 }
-    ],
+    "top_domains": [{ "domain": "google.com", "count": 45 }],
+    "top_categories": [{ "category": "search", "count": 45 }],
+    "visits_by_hour": [{ "hour": 0, "count": 5 }],
     "period": "24h"
   }
 }
 ```
 
-### Cleanup Old Logs
+---
+
+## 4.1 PIN-Protected Agent API
+
+API untuk mengamankan agent dari disable tanpa izin admin.
+
+### Set Admin PIN
 
 ```http
-DELETE /api/activity-logs
+POST /api/agent-pin
 Content-Type: application/json
 
 {
-  "days_to_keep": 30
+  "pin": "123456"
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
-  "message": "Deleted 5 old log files",
-  "deleted_count": 5
+  "message": "Agent PIN has been set successfully"
+}
+```
+
+### Check PIN Status
+
+```http
+GET /api/agent-pin/status
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "enabled": true,
+  "hasPin": true
+}
+```
+
+### Verify PIN
+
+```http
+POST /api/agent-pin/verify
+Content-Type: application/json
+
+{
+  "pin": "123456"
+}
+```
+
+**Response (correct PIN):**
+
+```json
+{
+  "success": true,
+  "verified": true,
+  "message": "PIN verified successfully"
+}
+```
+
+**Response (wrong PIN):**
+
+```json
+{
+  "success": true,
+  "verified": false,
+  "message": "Invalid PIN"
 }
 ```
 
@@ -319,6 +376,7 @@ Secara default, logs disimpan per hari di folder `wg-db/activity_logs/`. Untuk c
 ### Data Storage
 
 Data disimpan dalam format JSON:
+
 - **Location:** `wg-db/activity_logs/YYYY-MM-DD.json`
 - **Max per file:** 10,000 entries
 - **Rotasi:** Per hari

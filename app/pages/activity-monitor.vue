@@ -18,6 +18,12 @@ interface BrowsingActivity {
   blocked?: boolean
   timestamp: string
   duration?: number
+  // Device context for forensic tracking
+  ip?: string
+  browser?: string
+  os?: string
+  deviceType?: string
+  deviceFingerprint?: string
 }
 
 interface ActivityStats {
@@ -427,6 +433,21 @@ const testInstructions = computed(() => `
                 </div>
                 <p v-if="activity.title" class="text-sm text-text-secondary truncate mb-1">{{ activity.title }}</p>
                 <p class="text-xs text-text-secondary truncate font-mono">{{ activity.url }}</p>
+                <!-- Device Info Row -->
+                <div v-if="activity.deviceFingerprint || activity.ip" class="flex flex-wrap items-center gap-2 mt-2">
+                  <span v-if="activity.deviceFingerprint" class="px-2 py-0.5 text-xs rounded bg-purple-500/20 text-purple-400 font-mono" :title="'Device ID: ' + activity.deviceFingerprint">
+                    🔒 {{ activity.deviceFingerprint }}
+                  </span>
+                  <span v-if="activity.ip" class="px-2 py-0.5 text-xs rounded bg-blue-500/20 text-blue-400 font-mono">
+                    📍 {{ activity.ip }}
+                  </span>
+                  <span v-if="activity.browser" class="px-2 py-0.5 text-xs rounded bg-green-500/20 text-green-400">
+                    {{ activity.browser }} / {{ activity.os || 'Unknown' }}
+                  </span>
+                  <span v-if="activity.deviceType" class="px-2 py-0.5 text-xs rounded bg-orange-500/20 text-orange-400">
+                    {{ activity.deviceType === 'Desktop' ? '💻' : activity.deviceType === 'Mobile' ? '📱' : '📊' }} {{ activity.deviceType }}
+                  </span>
+                </div>
               </div>
               <div class="text-right shrink-0">
                 <div class="text-sm text-text-secondary">{{ formatTime(activity.timestamp) }}</div>

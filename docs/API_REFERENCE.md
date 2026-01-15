@@ -27,6 +27,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -62,6 +63,7 @@ GET /api/clients
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -93,6 +95,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -119,6 +122,7 @@ DELETE /api/clients/:id
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -133,6 +137,7 @@ GET /api/clients/:id/config
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -160,6 +165,7 @@ GET /api/2fa/status
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -174,6 +180,7 @@ POST /api/2fa/setup
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -212,6 +219,7 @@ POST /api/clients/:id/2fa/setup
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -247,6 +255,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -279,6 +288,7 @@ GET /api/status
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -317,6 +327,7 @@ GET /api/server/config
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -367,6 +378,7 @@ GET /api/vpn-connections?type=active
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -470,12 +482,20 @@ X-Client-Id: device-abc123
 }
 ```
 
-**Response:**
+**Response (with auto-detected device info):**
+
 ```json
 {
   "success": true,
   "logged_count": 1,
-  "timestamp": "2025-12-22T11:00:00.000Z"
+  "timestamp": "2025-12-22T11:00:00.000Z",
+  "device": {
+    "fingerprint": "ea70495e0c3d",
+    "browser": "Chrome",
+    "os": "macOS",
+    "type": "Desktop",
+    "vpn_client": { "id": "abc123", "name": "rnrifai" }
+  }
 }
 ```
 
@@ -486,6 +506,7 @@ GET /api/activity-logs?limit=100&category=social
 ```
 
 **Query Parameters:**
+
 - `limit` - Max records (default: 100)
 - `client_id` - Filter by client
 - `category` - Filter by category (social, video, news, etc)
@@ -498,30 +519,60 @@ GET /api/activity-logs?limit=100&category=social
 GET /api/activity-logs?stats=true&period=24h
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "stats": {
-    "total_visits": 150,
-    "unique_domains": 25,
-    "top_domains": [...],
-    "top_categories": [...],
-    "visits_by_hour": [...],
-    "period": "24h"
-  }
-}
-```
+---
 
-### Cleanup Old Logs
+## Agent PIN Protection
+
+### Set Admin PIN
 
 ```http
-DELETE /api/activity-logs
+POST /api/agent-pin
 Content-Type: application/json
 
-{
-  "days_to_keep": 30
-}
+{"pin": "123456"}
+```
+
+### Check PIN Status
+
+```http
+GET /api/agent-pin/status
+```
+
+**Response:**
+
+```json
+{ "success": true, "enabled": true, "hasPin": true }
+```
+
+### Verify PIN
+
+```http
+POST /api/agent-pin/verify
+Content-Type: application/json
+
+{"pin": "123456"}
+```
+
+**Response:**
+
+```json
+{ "success": true, "verified": true }
+```
+
+---
+
+## Access Logs (Server Requests)
+
+### Get Access Logs
+
+```http
+GET /api/access-logs?limit=100&device_fingerprint=ea70495e0c3d
+```
+
+### Get Access Log Stats
+
+```http
+GET /api/access-logs/stats?days=7
 ```
 
 ---
@@ -538,6 +589,7 @@ All errors follow this format:
 ```
 
 HTTP status codes:
+
 - `400` - Bad request
 - `401` - Unauthorized
 - `404` - Not found
