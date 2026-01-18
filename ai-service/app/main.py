@@ -34,11 +34,11 @@ async def lifespan(app: FastAPI):
     
     # Initialize models
     anomaly_detector = AnomalyDetector(
-        model_path=settings.model_path,
+        model_path=settings.ml_model_path,
         contamination=settings.contamination
     )
     behavior_profiler = BehaviorProfiler(
-        model_path=settings.model_path,
+        model_path=settings.ml_model_path,
         window_days=settings.profile_window_days
     )
     

@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
                 domain: query.domain as string,
                 category: query.category as string,
                 source: query.source as 'agent' | 'dns',
+                ip: query.ip as string,
                 start_date: query.start_date as string,
                 end_date: query.end_date as string,
                 limit: query.limit ? parseInt(query.limit as string) : 100

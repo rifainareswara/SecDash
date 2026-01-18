@@ -1016,6 +1016,7 @@ export function getBrowsingActivity(options: {
     domain?: string
     category?: string
     source?: 'agent' | 'dns'
+    ip?: string
     start_date?: string
     end_date?: string
     limit?: number
@@ -1064,6 +1065,9 @@ export function getBrowsingActivity(options: {
     }
     if (options.source) {
         filtered = filtered.filter(l => l.source === options.source)
+    }
+    if (options.ip) {
+        filtered = filtered.filter(l => l.ip?.includes(options.ip!))
     }
 
     // Sort by timestamp descending and limit

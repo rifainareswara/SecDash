@@ -1,0 +1,169 @@
+{
+  "profiles": {
+    "ext-7ncenw5mn1v": {
+      "client_id": "ext-7ncenw5mn1v",
+      "created_at": "2026-01-18T09:51:36.489819",
+      "data_points": 56,
+      "window_days": 30,
+      "time_patterns": {
+        "typical_hours": [
+          6,
+          8,
+          15
+        ],
+        "hour_distribution": [
+          0.0,
+          5.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          26.0,
+          0.0,
+          10.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          15.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "typical_days": [
+          1,
+          2,
+          3
+        ],
+        "day_distribution": [
+          0.0,
+          25.0,
+          17.0,
+          14.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "domain_patterns": {
+        "top_domains": [
+          {
+            "name": "youtube.com",
+            "count": 13
+          },
+          {
+            "name": "console.cloud.google.com",
+            "count": 9
+          },
+          {
+            "name": "indonesia.travel",
+            "count": 5
+          },
+          {
+            "name": "git.magnusdigital.co.id",
+            "count": 4
+          },
+          {
+            "name": "google.com",
+            "count": 3
+          },
+          {
+            "name": "gemini.google.com",
+            "count": 3
+          },
+          {
+            "name": "salesforce.com",
+            "count": 2
+          },
+          {
+            "name": "lightsail.aws.amazon.com",
+            "count": 2
+          },
+          {
+            "name": "829706496690-eiips27b.ap-southeast-1.console.aws.amazon.com",
+            "count": 2
+          },
+          {
+            "name": "ap-southeast-2.signin.aws.amazon.com",
+            "count": 2
+          }
+        ],
+        "unique_domains": 16,
+        "avg_domains_per_day": 0.5333333333333333
+      },
+      "category_patterns": {
+        "distribution": {
+          "video": 13,
+          "other": 12,
+          "shopping": 9,
+          "email": 3,
+          "search": 16,
+          "social": 3
+        },
+        "top_categories": [
+          {
+            "name": "search",
+            "count": 16
+          },
+          {
+            "name": "video",
+            "count": 13
+          },
+          {
+            "name": "other",
+            "count": 12
+          },
+          {
+            "name": "shopping",
+            "count": 9
+          },
+          {
+            "name": "email",
+            "count": 3
+          }
+        ]
+      },
+      "device_patterns": {
+        "browsers": {
+          "Unknown": 56
+        },
+        "primary_browser": "Unknown"
+      },
+      "session_patterns": {
+        "mean": 0,
+        "std": 0,
+        "min": 0,
+        "max": 0,
+        "count": 0,
+        "typical_duration": 0
+      },
+      "traffic_patterns": {
+        "bytes_sent": {
+          "mean": 0,
+          "std": 0,
+          "min": 0,
+          "max": 0,
+          "count": 0
+        },
+        "bytes_received": {
+          "mean": 0,
+          "std": 0,
+          "min": 0,
+          "max": 0,
+          "count": 0
+        }
+      },
+      "risk_level": "low"
+    }
+  },
+  "saved_at": "2026-01-18T09:51:36.492808",
+  "window_days": 30,
+  "deviation_threshold": 2.0
+}

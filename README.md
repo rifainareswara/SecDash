@@ -10,10 +10,11 @@ A modern, beautiful WireGuard VPN management dashboard built with Nuxt 3.
 - 📧 **Email Configs** - Send VPN configurations via email (SMTP)
 - 📊 **Real-time Stats** - Live monitoring of connections, handshakes, and data transfer
 - 🌐 **Traffic Monitoring** - Track access to internal servers
-- 🔍 **Activity Monitoring** - Track browsing activity from connected devices *(NEW)*
+- 🔍 **Activity Monitoring** - Track browsing activity with IP filtering
+- 🧠 **AI Security Insights** - Anomaly detection & behavior analytics _(NEW)_
 - 🖥️ **Wake-on-LAN** - Wake devices on your network remotely
 - ⚡ **Uptime Monitoring** - Monitor servers/services status like Uptime Kuma
-- 🚀 **Multi-Environment** - Run dev/uat/prod simultaneously without port conflicts *(NEW)*
+- 🚀 **Multi-Environment** - Run dev/uat/prod simultaneously without port conflicts
 - 📱 **Responsive Design** - Works beautifully on desktop and mobile
 
 ---
@@ -42,6 +43,7 @@ sudo ./deploy.sh YOUR_PUBLIC_IP
 ```
 
 **That's it!** The script automatically:
+
 - ✅ Detects your public IP
 - ✅ Configures environment
 - ✅ Builds and starts containers
@@ -79,6 +81,7 @@ nano .env
 ```
 
 Set these values:
+
 ```env
 WG_HOST=YOUR_PUBLIC_IP    # Required!
 WG_PORT=51820
@@ -109,14 +112,14 @@ sudo ./scripts/setup-host.sh
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `WG_HOST` | **Required!** Public IP or domain | `auto` |
-| `WG_PORT` | WireGuard UDP port | `51820` |
-| `WEBUI_PORT` | Dashboard web port | `3000` |
-| `WG_SUBNET` | Internal VPN subnet | `10.252.1.0` |
-| `TZ` | Timezone | `Asia/Jakarta` |
-| `COOKIE_SECURE` | Use secure cookies (HTTPS) | `false` |
+| Variable        | Description                       | Default        |
+| --------------- | --------------------------------- | -------------- |
+| `WG_HOST`       | **Required!** Public IP or domain | `auto`         |
+| `WG_PORT`       | WireGuard UDP port                | `51820`        |
+| `WEBUI_PORT`    | Dashboard web port                | `3000`         |
+| `WG_SUBNET`     | Internal VPN subnet               | `10.252.1.0`   |
+| `TZ`            | Timezone                          | `Asia/Jakarta` |
+| `COOKIE_SECURE` | Use secure cookies (HTTPS)        | `false`        |
 
 ### Moving to a New Server
 
@@ -128,6 +131,7 @@ sudo ./deploy.sh NEW_SERVER_IP
 ```
 
 After deployment:
+
 1. Old client configs will NOT work (different server keys)
 2. Create new clients and distribute new QR codes
 
@@ -159,6 +163,7 @@ docker logs wireguard
 ### Dashboard Shows "Never" for Handshake
 
 The dashboard fetches real-time data from WireGuard. If showing "Never":
+
 1. Client hasn't connected yet
 2. Dashboard container can't access wg0 interface
 3. Try: `docker restart vpn-dashboard`
@@ -209,11 +214,11 @@ docker-compose up -d --build
 
 Run multiple environments (dev/uat/prod) simultaneously without port conflicts:
 
-| Environment | Dashboard | WireGuard | Subnet |
-|-------------|-----------|-----------|--------|
-| DEV | :3000 | :51820 | 10.252.1.x |
-| UAT | :3001 | :51821 | 10.252.2.x |
-| PROD | :3002 | :51822 | 10.252.3.x |
+| Environment | Dashboard | WireGuard | Subnet     |
+| ----------- | --------- | --------- | ---------- |
+| DEV         | :3000     | :51820    | 10.252.1.x |
+| UAT         | :3001     | :51821    | 10.252.2.x |
+| PROD        | :3002     | :51822    | 10.252.3.x |
 
 ```bash
 # Start specific environment
@@ -243,6 +248,7 @@ Track browsing activity from VPN-connected devices:
 4. View real-time activity and statistics
 
 Features:
+
 - Real-time browsing feed
 - Top domains & categories analytics
 - Filtering by domain, category, device
@@ -319,4 +325,3 @@ SecDash/
 ## License
 
 MIT
-

@@ -41,6 +41,7 @@ const loadingActivities = ref(true)
 const selectedPeriod = ref<'24h' | '7d' | '30d'>('24h')
 const searchQuery = ref('')
 const selectedCategory = ref('')
+const ipFilter = ref('')
 const customDeviceName = ref('')
 const showAgentModal = ref(false)
 
@@ -94,6 +95,7 @@ async function fetchBrowserActivity() {
     const params = new URLSearchParams()
     if (selectedCategory.value) params.append('category', selectedCategory.value)
     if (searchQuery.value) params.append('domain', searchQuery.value)
+    if (ipFilter.value) params.append('ip', ipFilter.value)
     params.append('limit', '100')
 
     const res = await $fetch<{ success: boolean; logs: BrowsingActivity[] }>(`/api/activity-logs?${params}`)
@@ -250,7 +252,7 @@ const mobileBookmarklet = computed(() => {
 // Auto refresh
 const refreshInterval = ref<NodeJS.Timeout | null>(null)
 
-watch([selectedCategory, searchQuery], () => fetchBrowserActivity())
+watch([selectedCategory, searchQuery, ipFilter], () => fetchBrowserActivity())
 watch(selectedPeriod, () => fetchStats())
 
 onMounted(() => {
@@ -399,6 +401,10 @@ const testInstructions = computed(() => `
         <div class="flex-1 relative">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">search</span>
           <input v-model="searchQuery" type="text" placeholder="Search domains..." class="w-full bg-surface border border-surface-highlight rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-text-secondary focus:outline-none focus:border-primary">
+        </div>
+        <div class="w-full md:w-48 relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">lan</span>
+          <input v-model="ipFilter" type="text" placeholder="Filter by IP..." class="w-full bg-surface border border-surface-highlight rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-text-secondary focus:outline-none focus:border-primary">
         </div>
         <select v-model="selectedCategory" class="bg-surface border border-surface-highlight rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary">
           <option v-for="cat in categories" :key="cat.value" :value="cat.value" class="bg-surface-dark text-white">{{ cat.label }}</option>

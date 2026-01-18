@@ -4,91 +4,100 @@ A Python-based AI microservice for anomaly detection and user behavior analytics
 
 ## Features
 
-- **Anomaly Detection**: Uses Isolation Forest to detect unusual VPN usage patterns
-- **User Behavior Analytics (UBA)**: Builds user profiles and detects deviations
+- **Anomaly Detection**: Isolation Forest algorithm detects unusual VPN patterns
+- **User Behavior Analytics**: Statistical profiling with deviation detection
 - **Real-time Scoring**: Fast inference for immediate threat detection
-- **REST API**: FastAPI-based endpoints for integration with main dashboard
+- **REST API**: FastAPI-based endpoints for dashboard integration
 
 ## Quick Start
 
-### Prerequisites
-
-- Python 3.10+
-- pip or Poetry
-
-### Installation
+### With Docker (Recommended)
 
 ```bash
+# From project root
+docker-compose up -d ai-service
+
+# Check logs
+docker logs ai-service
+```
+
+### Local Development
+
+```bash
+cd ai-service
+
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the service
+# Run service
 uvicorn app.main:app --reload --port 8001
-```
-
-### Docker
-
-```bash
-docker build -t secdash-ai .
-docker run -p 8001:8001 -v ./models:/models -v ../wg-db:/data:ro secdash-ai
 ```
 
 ## API Endpoints
 
-| Endpoint                   | Method | Description                    |
-| -------------------------- | ------ | ------------------------------ |
-| `/health`                  | GET    | Health check                   |
-| `/api/analyze`             | POST   | Analyze activity for anomalies |
-| `/api/profile/{client_id}` | GET    | Get user behavior profile      |
-| `/api/train`               | POST   | Retrain models with new data   |
-| `/api/anomalies`           | GET    | List detected anomalies        |
+| Endpoint                          | Method | Description             |
+| --------------------------------- | ------ | ----------------------- |
+| `/health`                         | GET    | Health check            |
+| `/api/status`                     | GET    | Model status            |
+| `/api/analyze`                    | POST   | Analyze single activity |
+| `/api/analyze/batch`              | POST   | Batch analysis          |
+| `/api/train`                      | POST   | Train anomaly model     |
+| `/api/profile/build`              | POST   | Build user profile      |
+| `/api/profile/build-all`          | POST   | Build all profiles      |
+| `/api/profile/{id}`               | GET    | Get user profile        |
+| `/api/profiles`                   | GET    | List all profiles       |
+| `/api/anomalies`                  | GET    | List anomalies          |
+| `/api/anomalies/{id}/acknowledge` | POST   | Acknowledge anomaly     |
+| `/api/anomalies/stats`            | GET    | Anomaly statistics      |
+| `/api/feature-importance`         | GET    | Feature importance      |
+
+## Configuration
+
+| Variable              | Default   | Description            |
+| --------------------- | --------- | ---------------------- |
+| `DATA_PATH`           | `/data`   | Activity logs path     |
+| `MODEL_PATH`          | `/models` | ML models path         |
+| `CONTAMINATION`       | `0.05`    | Expected anomaly ratio |
+| `PROFILE_WINDOW_DAYS` | `30`      | Baseline window        |
+| `DEVIATION_THRESHOLD` | `2.0`     | Z-score threshold      |
 
 ## Project Structure
 
 ```
 ai-service/
 ├── app/
-│   ├── __init__.py
-│   ├── main.py              # FastAPI application
-│   ├── config.py            # Configuration
+│   ├── main.py              # FastAPI entry point
+│   ├── config.py            # Settings
 │   ├── models/
-│   │   ├── anomaly_detector.py
-│   │   └── behavior_profiler.py
-│   ├── features/
-│   │   ├── extractor.py
-│   │   └── preprocessor.py
+│   │   ├── anomaly_detector.py   # Isolation Forest
+│   │   └── behavior_profiler.py  # User profiling
 │   ├── api/
-│   │   ├── routes.py
-│   │   └── schemas.py
+│   │   ├── routes.py        # Endpoints
+│   │   └── schemas.py       # Pydantic models
 │   └── utils/
-│       └── data_loader.py
-├── models/                   # Saved ML models
-├── tests/
-├── requirements.txt
-└── Dockerfile
+│       └── data_loader.py   # Data loading
+├── Dockerfile
+└── requirements.txt
 ```
-
-## Configuration
-
-Environment variables:
-
-| Variable              | Default   | Description                 |
-| --------------------- | --------- | --------------------------- |
-| `DATA_PATH`           | `/data`   | Path to activity logs       |
-| `MODEL_PATH`          | `/models` | Path to save/load models    |
-| `CONTAMINATION`       | `0.05`    | Expected anomaly ratio      |
-| `PROFILE_WINDOW_DAYS` | `30`      | Days for behavior profiling |
 
 ## For Thesis
 
-This service implements:
+### Algorithms
 
-- **Isolation Forest** algorithm for anomaly detection
-- **Statistical profiling** for user behavior analytics
-- **Feature engineering** from VPN activity logs
+1. **Isolation Forest** (Liu et al., 2008)
+   - Complexity: O(n log n)
+   - Formula: `s(x,n) = 2^(-E(h(x))/c(n))`
 
-See the main documentation for algorithm details and evaluation metrics.
+2. **Statistical Profiling**
+   - Rolling 30-day baseline
+   - Z-score deviation detection
+
+### Evaluation Metrics
+
+- Precision, Recall, F1-Score
+- False Positive Rate
+- Detection Latency

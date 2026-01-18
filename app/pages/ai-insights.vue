@@ -8,10 +8,6 @@
  * - Risk Scoring
  */
 
-definePageMeta({
-  middleware: 'auth'
-})
-
 // Reactive state
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -36,11 +32,11 @@ const fetchData = async () => {
   
   try {
     // Fetch AI status
-    const statusRes = await $fetch('/api/ai')
+    const statusRes = await $fetch<any>('/api/ai')
     aiStatus.value = statusRes
     
     // Fetch anomalies
-    const anomaliesRes = await $fetch('/api/ai-anomalies', {
+    const anomaliesRes = await $fetch<{ anomalies?: any[] }>('/api/ai-anomalies', {
       params: {
         severity: selectedSeverity.value || undefined,
         acknowledged: showAcknowledged.value ? 'true' : 'false',
@@ -50,13 +46,13 @@ const fetchData = async () => {
     anomalies.value = anomaliesRes.anomalies || []
     
     // Fetch anomaly stats
-    const statsRes = await $fetch('/api/ai-anomalies', {
+    const statsRes = await $fetch<{ stats?: any }>('/api/ai-anomalies', {
       params: { stats: 'true' }
     })
     anomalyStats.value = statsRes.stats
     
     // Fetch profiles
-    const profilesRes = await $fetch('/api/ai-profiles')
+    const profilesRes = await $fetch<{ profiles?: any[] }>('/api/ai-profiles')
     profiles.value = profilesRes.profiles || []
   } catch (err: any) {
     error.value = err.message
@@ -71,7 +67,7 @@ const trainModels = async (force: boolean = false) => {
   trainingResult.value = null
   
   try {
-    const result = await $fetch('/api/ai', {
+    const result = await $fetch<{ result?: any }>('/api/ai', {
       method: 'POST',
       body: { action: 'train', force, data_days: 30 }
     })

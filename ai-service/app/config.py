@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     
     # Paths
     data_path: str = os.getenv("DATA_PATH", "/data")
-    model_path: str = os.getenv("MODEL_PATH", "/models")
+    ml_model_path: str = os.getenv("MODEL_PATH", "/models")  # Renamed to avoid conflict
     
     # Anomaly Detection settings
     contamination: float = 0.05  # Expected proportion of anomalies
@@ -33,8 +33,7 @@ class Settings(BaseSettings):
     # Main dashboard URL (for callbacks)
     dashboard_url: str = os.getenv("DASHBOARD_URL", "http://localhost:3000")
     
-    class Config:
-        env_file = ".env"
+    model_config = {"protected_namespaces": ("settings_",)}  # Fix pydantic warning
 
 
 @lru_cache()
