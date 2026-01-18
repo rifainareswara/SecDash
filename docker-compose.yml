@@ -22,6 +22,7 @@ services:
     ports:
       - "${WG_PORT:-51820}:51820/udp"
       - "${WEBUI_PORT:-3000}:3000"
+      - "${AI_PORT:-8001}:8001"
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
       - net.ipv4.ip_forward=1
@@ -50,7 +51,30 @@ services:
       - NITRO_PORT=3000
       - PUBLIC_HOST=${WG_HOST:-auto}
       - COOKIE_SECURE=${COOKIE_SECURE:-false}
+      - AI_SERVICE_URL=http://localhost:8001
     volumes:
       - ./wg-db:/app/wg-db
       - ./config:/config
     restart: unless-stopped
+
+  ai-service:
+    build: ./ai-service
+    container_name: ai-service
+    network_mode: service:wireguard
+    depends_on:
+      - vpn-dashboard
+    environment:
+      - DATA_PATH=/data
+      - MODEL_PATH=/models
+      - DEBUG=${AI_DEBUG:-false}
+    volumes:
+      - ./wg-db:/data:ro          # Read-only access to activity logs
+      - ./ai-models:/models        # Persistent model storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+

@@ -1,5 +1,22 @@
 [
   {
+    "id": "1768451838535-120428b7",
+    "client_id": "efc5aa7e",
+    "device_name": "test",
+    "url": "https://youtube.com/watch?v=abc123",
+    "domain": "youtube.com",
+    "title": "Test Video - YouTube",
+    "category": "video",
+    "source": "agent",
+    "blocked": false,
+    "timestamp": "2026-01-15T04:37:18.535Z",
+    "ip": "10.252.1.2",
+    "browser": "Chrome",
+    "os": "Windows",
+    "deviceType": "Desktop",
+    "deviceFingerprint": "18e49c296e27"
+  },
+  {
     "id": "1768448005376-0b78ffde",
     "client_id": "efc5aa7e",
     "device_name": "test",
