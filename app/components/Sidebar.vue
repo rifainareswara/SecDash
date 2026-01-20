@@ -16,10 +16,9 @@ const wireGuardExpanded = ref(true)
 // Regular nav items (non-grouped)
 const navItems = [
   { icon: 'dashboard', label: 'Dashboard', href: '/' },
-  { icon: 'shield', label: 'Access Control', href: '/access-control' },
   { icon: 'speed', label: 'Uptime Monitor', href: '/uptime' },
-  { icon: 'travel_explore', label: 'Activity Monitor', href: '/activity-monitor' },
-  { icon: 'history', label: 'Access Logs', href: '/logs' },
+  { icon: 'monitoring', label: 'Monitoring', href: '/activity-monitor' },
+  { icon: 'psychology', label: 'AI Insights', href: '/ai-insights', isNew: true },
   { icon: 'admin_panel_settings', label: 'Admin Users', href: '/admin' }
 ]
 

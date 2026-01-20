@@ -2,7 +2,7 @@
 import ConfirmationModal from '~/components/ConfirmationModal.vue'
 
 // Tab state
-type TabType = 'browser' | 'network'
+type TabType = 'browser' | 'network' | 'access'
 const activeTab = ref<TabType>('browser')
 
 // ===== BROWSER ACTIVITY (from Activity Monitor) =====
@@ -88,6 +88,41 @@ const serverToDelete = ref<MonitoredServer | null>(null)
 
 const newServer = reactive({ name: '', ip: '' })
 
+// ===== ACCESS LOGS (from logs.vue) =====
+interface AccessLog {
+  id: string
+  timestamp: string
+  ip: string
+  method: string
+  path: string
+  userAgent: string
+  browser: string
+  os: string
+  device: string
+  deviceFingerprint: string
+  username?: string
+  sessionId?: string
+  acceptLanguage?: string
+  referer?: string
+}
+
+interface AccessLogStats {
+  totalRequests: number
+  uniqueIPs: number
+  uniqueDevices: number
+  topPaths: { path: string; count: number }[]
+  topDevices: { fingerprint: string; browser: string; os: string; device: string; count: number }[]
+  period: string
+}
+
+const accessLogs = ref<AccessLog[]>([])
+const accessStats = ref<AccessLogStats | null>(null)
+const loadingAccessLogs = ref(true)
+const accessAutoRefresh = ref(true)
+const filterIP = ref('')
+const filterFingerprint = ref('')
+const filterPath = ref('')
+
 // ===== FETCH FUNCTIONS =====
 async function fetchBrowserActivity() {
   try {
@@ -126,6 +161,59 @@ async function fetchNetworkData() {
     console.error('Failed to fetch network data:', err)
   } finally {
     loadingNetwork.value = false
+  }
+}
+
+async function fetchAccessLogs() {
+  try {
+    const params = new URLSearchParams()
+    params.append('limit', '200')
+    if (filterIP.value) params.append('ip', filterIP.value)
+    if (filterFingerprint.value) params.append('device_fingerprint', filterFingerprint.value)
+    if (filterPath.value) params.append('path', filterPath.value)
+
+    const response = await $fetch<{ success: boolean; logs: AccessLog[] }>(`/api/access-logs?${params.toString()}`)
+    if (response.success) {
+      accessLogs.value = response.logs
+    }
+  } catch (err) {
+    console.error('Failed to fetch access logs:', err)
+  } finally {
+    loadingAccessLogs.value = false
+  }
+}
+
+async function fetchAccessStats() {
+  try {
+    const response = await $fetch<{ success: boolean; stats: AccessLogStats }>('/api/access-logs/stats?days=7')
+    if (response.success) {
+      accessStats.value = response.stats
+    }
+  } catch (err) {
+    console.error('Failed to fetch access stats:', err)
+  }
+}
+
+function filterByFingerprint(fp: string) {
+  filterFingerprint.value = fp
+  fetchAccessLogs()
+}
+
+function clearAccessFilters() {
+  filterIP.value = ''
+  filterFingerprint.value = ''
+  filterPath.value = ''
+  fetchAccessLogs()
+}
+
+async function clearAccessLogs() {
+  if (!confirm('Hapus semua access logs lama (lebih dari 30 hari)?')) return
+  try {
+    await $fetch('/api/access-logs/clear', { method: 'POST', body: { days_to_keep: 0 } })
+    await fetchAccessLogs()
+    await fetchAccessStats()
+  } catch (err) {
+    console.error('Failed to clear logs:', err)
   }
 }
 
@@ -252,17 +340,54 @@ const refreshInterval = ref<NodeJS.Timeout | null>(null)
 
 watch([selectedCategory, searchQuery], () => fetchBrowserActivity())
 watch(selectedPeriod, () => fetchStats())
+watch([filterIP, filterFingerprint, filterPath], () => fetchAccessLogs())
+
+// ===== ACCESS LOGS HELPERS =====
+const getBrowserIcon = (browser: string) => {
+  const icons: Record<string, string> = {
+    'Chrome': '🌐', 'Firefox': '🦊', 'Safari': '🧭', 'Edge': '🔷', 'Opera': '🔴', 'Unknown': '❓'
+  }
+  return icons[browser] || '🌐'
+}
+
+const getDeviceIcon = (device: string) => {
+  const icons: Record<string, string> = { 'Desktop': 'computer', 'Mobile': 'smartphone', 'Tablet': 'tablet' }
+  return icons[device] || 'devices'
+}
+
+const formatAccessTime = (timestamp: string) => {
+  const date = new Date(timestamp)
+  return {
+    time: date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    date: date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+  }
+}
+
+const getMethodColor = (method: string) => {
+  const colors: Record<string, string> = {
+    'GET': 'text-blue-400 bg-blue-500/20', 'POST': 'text-green-400 bg-green-500/20',
+    'PUT': 'text-yellow-400 bg-yellow-500/20', 'PATCH': 'text-orange-400 bg-orange-500/20',
+    'DELETE': 'text-red-400 bg-red-500/20'
+  }
+  return colors[method] || 'text-blue-400 bg-blue-500/20'
+}
+
+const shortFingerprint = (fp: string) => fp?.substring(0, 8) || '-'
 
 onMounted(() => {
   fetchBrowserActivity()
   fetchStats()
   fetchNetworkData()
+  fetchAccessLogs()
+  fetchAccessStats()
   refreshInterval.value = setInterval(() => {
     if (activeTab.value === 'browser') {
       fetchBrowserActivity()
       fetchStats()
-    } else {
+    } else if (activeTab.value === 'network') {
       fetchNetworkData()
+    } else if (activeTab.value === 'access') {
+      fetchAccessLogs()
     }
   }, 10000)
 })
@@ -333,6 +458,18 @@ const testInstructions = computed(() => `
       >
         <span class="material-symbols-outlined text-[18px]">lan</span>
         Network Traffic
+      </button>
+      <button 
+        @click="activeTab = 'access'"
+        :class="[
+          'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+          activeTab === 'access' 
+            ? 'bg-primary text-black shadow-lg' 
+            : 'text-text-secondary hover:text-white'
+        ]"
+      >
+        <span class="material-symbols-outlined text-[18px]">history</span>
+        Access Logs
       </button>
     </div>
 
@@ -516,6 +653,168 @@ const testInstructions = computed(() => `
               </tr>
               <tr v-if="trafficLogs.length === 0">
                 <td colspan="6" class="px-4 py-8 text-center text-text-secondary">No traffic detected yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== ACCESS LOGS TAB ========== -->
+    <div v-if="activeTab === 'access'" class="space-y-6">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass-panel p-4 rounded-xl">
+          <p class="text-text-secondary text-xs">Total Requests (7d)</p>
+          <p class="text-white text-2xl font-bold">{{ accessStats?.totalRequests || accessLogs.length }}</p>
+        </div>
+        <div class="glass-panel p-4 rounded-xl">
+          <p class="text-text-secondary text-xs">Unique IPs</p>
+          <p class="text-white text-2xl font-bold">{{ accessStats?.uniqueIPs || new Set(accessLogs.map(l => l.ip)).size }}</p>
+        </div>
+        <div class="glass-panel p-4 rounded-xl">
+          <p class="text-text-secondary text-xs">Unique Devices</p>
+          <p class="text-white text-2xl font-bold">{{ accessStats?.uniqueDevices || new Set(accessLogs.map(l => l.deviceFingerprint)).size }}</p>
+        </div>
+        <div class="glass-panel p-4 rounded-xl">
+          <p class="text-text-secondary text-xs">Auto-refresh</p>
+          <div class="flex items-center gap-2">
+            <div class="size-2 rounded-full bg-green-400 animate-pulse"></div>
+            <span class="text-white text-lg font-bold">Live</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="glass-panel p-4 rounded-xl">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-text-secondary text-sm font-medium">Filters:</span>
+          <input 
+            v-model="filterIP" 
+            placeholder="IP Address" 
+            class="px-3 py-1.5 bg-surface text-white text-sm rounded-lg border border-surface-highlight focus:border-primary outline-none w-36"
+          >
+          <input 
+            v-model="filterFingerprint" 
+            placeholder="Device ID" 
+            class="px-3 py-1.5 bg-surface text-white text-sm rounded-lg border border-surface-highlight focus:border-primary outline-none w-36"
+          >
+          <input 
+            v-model="filterPath" 
+            placeholder="Path" 
+            class="px-3 py-1.5 bg-surface text-white text-sm rounded-lg border border-surface-highlight focus:border-primary outline-none w-40"
+          >
+          <button 
+            v-if="filterIP || filterFingerprint || filterPath"
+            @click="clearAccessFilters"
+            class="px-3 py-1.5 bg-red-500/20 text-red-400 text-sm rounded-lg hover:bg-red-500/30 transition-colors"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Top Devices -->
+      <details class="glass-panel rounded-xl" v-if="accessStats?.topDevices?.length">
+        <summary class="px-4 py-3 cursor-pointer text-white font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">devices</span>
+          Top Devices ({{ accessStats.topDevices.length }})
+        </summary>
+        <div class="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div 
+            v-for="device in accessStats.topDevices" 
+            :key="device.fingerprint"
+            class="bg-surface-highlight/50 p-3 rounded-lg cursor-pointer hover:bg-surface-highlight transition-colors"
+            @click="filterByFingerprint(device.fingerprint)"
+          >
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">{{ getDeviceIcon(device.device) }}</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-medium text-sm truncate">{{ device.browser }} / {{ device.os }}</p>
+                <p class="text-text-secondary text-xs font-mono">ID: {{ shortFingerprint(device.fingerprint) }}</p>
+              </div>
+              <span class="text-primary font-bold">{{ device.count }}</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- Access Logs Table -->
+      <div class="glass-panel rounded-xl overflow-hidden">
+        <div class="p-4 border-b border-surface-highlight flex justify-between items-center">
+          <h3 class="font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-blue-400">history</span>
+            HTTP Access Logs
+          </h3>
+          <button
+            @click="clearAccessLogs"
+            class="flex items-center gap-2 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-xs transition-colors"
+          >
+            <span class="material-symbols-outlined text-[16px]">delete</span>
+            Clear Old
+          </button>
+        </div>
+        <div v-if="loadingAccessLogs" class="p-8 text-center">
+          <span class="material-symbols-outlined text-4xl text-text-secondary animate-spin">sync</span>
+          <p class="text-text-secondary mt-2">Loading logs...</p>
+        </div>
+        <div v-else class="overflow-x-auto max-h-[500px] overflow-y-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-[#12121a] sticky top-0">
+              <tr>
+                <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Time</th>
+                <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">IP Address</th>
+                <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Device ID</th>
+                <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Method</th>
+                <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Path</th>
+                <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Browser/OS</th>
+                <th class="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Device</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-highlight">
+              <tr 
+                v-for="log in accessLogs" 
+                :key="log.id"
+                class="hover:bg-surface-highlight/40 transition-colors"
+              >
+                <td class="px-4 py-3 text-text-secondary font-mono text-xs">
+                  <div>{{ formatAccessTime(log.timestamp).time }}</div>
+                  <div class="text-[10px] opacity-60">{{ formatAccessTime(log.timestamp).date }}</div>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded text-xs">{{ log.ip }}</span>
+                </td>
+                <td class="px-4 py-3">
+                  <button 
+                    @click="filterByFingerprint(log.deviceFingerprint)"
+                    class="font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded text-xs hover:bg-purple-500/20 transition-colors"
+                    :title="log.deviceFingerprint"
+                  >
+                    {{ shortFingerprint(log.deviceFingerprint) }}
+                  </button>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-0.5 rounded text-xs font-bold" :class="getMethodColor(log.method)">{{ log.method }}</span>
+                </td>
+                <td class="px-4 py-3 text-white font-mono text-xs max-w-[200px] truncate" :title="log.path">{{ log.path }}</td>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-1 text-xs text-white">
+                    <span>{{ getBrowserIcon(log.browser) }}</span>
+                    {{ log.browser }}
+                  </span>
+                  <span class="text-xs text-text-secondary">{{ log.os }}</span>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="flex items-center gap-1 text-xs text-text-secondary">
+                    <span class="material-symbols-outlined text-[16px]">{{ getDeviceIcon(log.device) }}</span>
+                    {{ log.device }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="accessLogs.length === 0">
+                <td colspan="7" class="px-4 py-8 text-center text-text-secondary">
+                  Belum ada access logs. Request akan muncul di sini secara real-time.
+                </td>
               </tr>
             </tbody>
           </table>
