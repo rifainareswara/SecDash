@@ -1,0 +1,11 @@
+{
+  "trained_at": "2026-01-19T03:15:21.652959",
+  "n_samples": 123,
+  "n_features": 10,
+  "contamination": 0.05,
+  "n_anomalies_detected": 6,
+  "score_mean": 0.47684689928203416,
+  "score_std": 0.08547319643966161,
+  "score_min": 0.37775476247821,
+  "score_max": 0.7615469132010416
+}

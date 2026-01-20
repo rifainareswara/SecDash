@@ -2,20 +2,20 @@
   "profiles": {
     "ext-7ncenw5mn1v": {
       "client_id": "ext-7ncenw5mn1v",
-      "created_at": "2026-01-18T09:51:36.489819",
-      "data_points": 56,
+      "created_at": "2026-01-19T03:15:29.938064",
+      "data_points": 113,
       "window_days": 30,
       "time_patterns": {
         "typical_hours": [
+          3,
           6,
-          8,
           15
         ],
         "hour_distribution": [
           0.0,
           5.0,
           0.0,
-          0.0,
+          57.0,
           0.0,
           0.0,
           26.0,
@@ -38,12 +38,12 @@
           0.0
         ],
         "typical_days": [
+          0,
           1,
-          2,
-          3
+          2
         ],
         "day_distribution": [
-          0.0,
+          57.0,
           25.0,
           17.0,
           14.0,
@@ -55,12 +55,24 @@
       "domain_patterns": {
         "top_domains": [
           {
+            "name": "docs.magnusdigital.co.id",
+            "count": 39
+          },
+          {
             "name": "youtube.com",
-            "count": 13
+            "count": 16
           },
           {
             "name": "console.cloud.google.com",
-            "count": 9
+            "count": 11
+          },
+          {
+            "name": "gemini.google.com",
+            "count": 8
+          },
+          {
+            "name": "dev-fe.vanapp.co.id",
+            "count": 7
           },
           {
             "name": "indonesia.travel",
@@ -75,50 +87,38 @@
             "count": 3
           },
           {
-            "name": "gemini.google.com",
+            "name": "ssh.cloud.google.com",
             "count": 3
           },
           {
             "name": "salesforce.com",
             "count": 2
-          },
-          {
-            "name": "lightsail.aws.amazon.com",
-            "count": 2
-          },
-          {
-            "name": "829706496690-eiips27b.ap-southeast-1.console.aws.amazon.com",
-            "count": 2
-          },
-          {
-            "name": "ap-southeast-2.signin.aws.amazon.com",
-            "count": 2
           }
         ],
-        "unique_domains": 16,
-        "avg_domains_per_day": 0.5333333333333333
+        "unique_domains": 18,
+        "avg_domains_per_day": 0.6
       },
       "category_patterns": {
         "distribution": {
-          "video": 13,
-          "other": 12,
+          "video": 16,
+          "other": 58,
           "shopping": 9,
           "email": 3,
-          "search": 16,
+          "search": 24,
           "social": 3
         },
         "top_categories": [
           {
+            "name": "other",
+            "count": 58
+          },
+          {
             "name": "search",
-            "count": 16
+            "count": 24
           },
           {
             "name": "video",
-            "count": 13
-          },
-          {
-            "name": "other",
-            "count": 12
+            "count": 16
           },
           {
             "name": "shopping",
@@ -132,9 +132,10 @@
       },
       "device_patterns": {
         "browsers": {
-          "Unknown": 56
+          "Unknown": 56,
+          "Chrome": 57
         },
-        "primary_browser": "Unknown"
+        "primary_browser": "Chrome"
       },
       "session_patterns": {
         "mean": 0,
@@ -163,7 +164,7 @@
       "risk_level": "low"
     }
   },
-  "saved_at": "2026-01-18T09:51:36.492808",
+  "saved_at": "2026-01-19T03:15:29.940595",
   "window_days": 30,
   "deviation_threshold": 2.0
 }

@@ -60,7 +60,7 @@ Cara paling sederhana untuk testing. Buka browser console (F12 → Console) dan 
 
 ```javascript
 (function () {
-  const SERVER = "https://your-dashboard-url.com";
+  const SERVER = "https://vpn.magnusdigital.co.id";
   const CLIENT_ID = "device-" + Math.random().toString(36).substr(2, 9);
 
   function report() {
@@ -99,10 +99,10 @@ Tambahkan ke halaman atau inject via proxy:
 
 ```html
 <script>
-  window.ACTIVITY_TRACKER_SERVER = "https://your-dashboard.com";
+  window.ACTIVITY_TRACKER_SERVER = "https://vpn.magnusdigital.co.id";
   window.ACTIVITY_TRACKER_DEVICE_NAME = "Laptop Kantor";
 </script>
-<script src="https://your-dashboard.com/agent/activity-tracker.js"></script>
+<script src="https://vpn.magnusdigital.co.id/agent/activity-tracker.js"></script>
 ```
 
 ### Opsi 4: Bookmarklet

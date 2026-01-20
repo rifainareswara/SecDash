@@ -37,9 +37,9 @@ PIN-Protected Agent adalah Chrome Extension untuk memonitor aktivitas browsing y
 Sebelum install extension, set PIN admin terlebih dahulu:
 
 ```bash
-curl -X POST http://your-server.com/api/agent-pin \
+curl -X POST https://vpn.magnusdigital.co.id/api/agent-pin \
   -H "Content-Type: application/json" \
-  -d '{"pin": "YOUR_SECRET_PIN"}'
+  -d '{"pin": ""}'
 ```
 
 **Rekomendasi PIN:**
@@ -51,7 +51,7 @@ curl -X POST http://your-server.com/api/agent-pin \
 **Verifikasi PIN sudah aktif:**
 
 ```bash
-curl http://your-server.com/api/agent-pin/status
+curl https://vpn.magnusdigital.co.id/api/agent-pin/status
 # Response: {"success": true, "enabled": true, "hasPin": true}
 ```
 
@@ -73,7 +73,7 @@ Extension ada di folder: `public/agent/extension/`
 ### Langkah 3: Konfigurasi
 
 1. Klik icon extension di toolbar
-2. Isi **Server URL**: `https://your-dashboard.com`
+2. Isi **Server URL**: `https://vpn.magnusdigital.co.id`
 3. Isi **Device Name**: (opsional, contoh: "Laptop Kantor")
 4. Klik **Save Settings**
 5. Klik **Test Connection** untuk verifikasi
