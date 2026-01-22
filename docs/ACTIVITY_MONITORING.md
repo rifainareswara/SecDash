@@ -1,6 +1,6 @@
 # Activity Monitoring - Documentation
 
-Panduan lengkap untuk fitur **Browser Activity Tracking** pada SecDash VPN Dashboard.
+Panduan lengkap untuk fitur **Unified Monitoring** pada SecDash VPN Dashboard.
 
 ---
 
@@ -17,11 +17,18 @@ Panduan lengkap untuk fitur **Browser Activity Tracking** pada SecDash VPN Dashb
 
 ## 1. Gambaran Umum
 
-Fitur **Activity Monitoring** memungkinkan Anda melacak aktivitas browsing dari perangkat yang terhubung melalui VPN. Fitur ini berguna untuk:
+Fitur **Unified Monitoring** menggabungkan tiga jenis monitoring dalam satu halaman dengan tab:
+
+- **Browser Activity** - Melacak aktivitas browsing dari perangkat
+- **Network Traffic** - Memantau akses ke server internal
+- **Access Logs** - Log request ke dashboard dengan device fingerprinting
+
+### Use Cases
 
 - 👥 **Employee Monitoring** - Pantau produktivitas karyawan
 - 👨‍👩‍👧‍👦 **Parental Control** - Lindungi anak dari konten berbahaya
 - 🔒 **Network Security** - Deteksi akses mencurigakan
+- 🔍 **Forensics** - Investigasi aktivitas mencurigakan
 
 ### Fitur Utama
 
@@ -32,20 +39,21 @@ Fitur **Activity Monitoring** memungkinkan Anda melacak aktivitas browsing dari 
 | URL Logging         | Log URL lengkap untuk analisis detail            |
 | Auto-Categorization | Kategorisasi otomatis (social, video, news, dll) |
 | Statistics          | Statistik browsing 24h/7d/30d                    |
-| Filtering           | Filter by domain, category, client               |
+| Filtering           | Filter by domain, category, client, IP           |
+| Device Fingerprint  | Identifikasi unik untuk setiap device            |
 
 ### Arsitektur
 
 ```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Browser    │────▶│   Activity   │────▶│   Dashboard  │
-│    Agent     │     │     API      │     │     UI       │
-└──────────────┘     └──────────────┘     └──────────────┘
+┌──────────────┐     ┌──────────────┐     ┌───────────────────────┐
+│   Browser    │────▶│   Activity   │────▶│   Unified Monitoring  │
+│    Agent     │     │     API      │     │   /activity-monitor   │
+└──────────────┘     └──────────────┘     └───────────────────────┘
        │                    │                    │
-       │  POST /api/        │  JSON files        │  Vue.js
-       │  activity-agent    │  (wg-db/           │  /activity-
-       │                    │   activity_logs/)  │   monitor
-       └────────────────────┴────────────────────┘
+       │  POST /api/        │  JSON files        │  Vue.js (3 tabs)
+       │  activity-agent    │  (wg-db/           │  - Browser Activity
+       │                    │   activity_logs/)  │  - Network Traffic
+       └────────────────────┴────────────────────┘  - Access Logs
 ```
 
 ---
@@ -122,10 +130,14 @@ Atau gunakan modal **Install Agent** di dashboard untuk mendapatkan bookmarklet 
 ### Akses Dashboard
 
 1. Login ke SecDash VPN
-2. Klik **Activity Monitor** di sidebar
-3. Dashboard akan menampilkan data aktivitas
+2. Klik **Monitoring** di sidebar
+3. Pilih tab yang diinginkan
 
-### Panel Statistik
+### Tab 1: Browser Activity
+
+Melacak aktivitas browsing dari perangkat dengan agent terinstall.
+
+#### Panel Statistik
 
 | Panel          | Deskripsi                          |
 | -------------- | ---------------------------------- |
@@ -134,11 +146,11 @@ Atau gunakan modal **Install Agent** di dashboard untuk mendapatkan bookmarklet 
 | Top Category   | Kategori paling banyak dikunjungi  |
 | Time Period    | Pilih periode: 24h, 7d, atau 30d   |
 
-### Top Domains
+#### Top Domains
 
 Menampilkan 10 domain paling sering dikunjungi beserta jumlah kunjungan.
 
-### Categories
+#### Categories
 
 Breakdown aktivitas berdasarkan kategori:
 
@@ -154,12 +166,13 @@ Breakdown aktivitas berdasarkan kategori:
 | 🎮 Gaming   | steam.com, roblox.com               |
 | 📂 Other    | Domain lainnya                      |
 
-### Filter & Search
+#### Filter & Search
 
 - **Search**: Cari berdasarkan nama domain
 - **Category Filter**: Filter berdasarkan kategori
+- **IP Filter**: Filter berdasarkan IP address client
 
-### Real-time Feed
+#### Real-time Feed
 
 Daftar aktivitas terbaru dengan informasi:
 
@@ -168,6 +181,47 @@ Daftar aktivitas terbaru dengan informasi:
 - Full URL
 - Timestamp
 - Client ID
+- Device info
+
+### Tab 2: Network Traffic
+
+Memantau akses ke server internal tertentu.
+
+#### Menambah Server untuk Dimonitor
+
+1. Klik **Add Server to Monitor**
+2. Masukkan nama server dan IP address
+3. Traffic ke IP tersebut akan dicatat
+
+#### Traffic Logs
+
+Menampilkan:
+
+- Client IP (VPN client yang mengakses)
+- Target server
+- Port tujuan
+- Jumlah packet
+
+### Tab 3: Access Logs
+
+Log request ke dashboard dengan device fingerprinting.
+
+#### Informasi yang Dicatat
+
+- IP address
+- Browser dan OS
+- Device type (Desktop/Mobile/Tablet)
+- Device fingerprint (ID unik)
+- Request path
+- Timestamp
+
+#### Top Devices
+
+Menampilkan device paling aktif dengan:
+
+- Fingerprint
+- Browser/OS info
+- Jumlah request
 
 ---
 
@@ -435,3 +489,6 @@ Jika mendapat error CORS, pastikan dashboard dan agent menggunakan URL yang sama
 - [User Guide](./USER_GUIDE.md)
 - [API Reference](./API_REFERENCE.md)
 - [Code Overview](./CODE_OVERVIEW.md)
+- [AI Insights](./AI_INSIGHTS.md)
+- [PIN-Protected Agent](./PIN_PROTECTED_AGENT.md)
+- [Access Logging](./access-logging.md)

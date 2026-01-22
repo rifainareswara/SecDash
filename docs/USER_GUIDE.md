@@ -12,9 +12,10 @@ Welcome to SecDash VPN! This guide will help you get started with managing your 
 4. [Two-Factor Authentication (2FA)](#4-two-factor-authentication-2fa)
 5. [Connecting from Mobile](#5-connecting-from-mobile)
 6. [Server Configuration](#6-server-configuration)
-7. [Access Control (Traffic Monitor)](#7-access-control-traffic-monitor)
-8. [Other Features](#8-other-features)
-9. [Troubleshooting](#9-troubleshooting)
+7. [Unified Monitoring](#7-unified-monitoring)
+8. [AI Security Insights](#8-ai-security-insights)
+9. [Other Features](#9-other-features)
+10. [Troubleshooting](#10-troubleshooting)
 
 ---
 
@@ -47,12 +48,12 @@ The main dashboard shows:
 
 ### Client Status Indicators
 
-| Status | Color | Meaning |
-|--------|-------|---------|
-| Active | 🟢 Green | Connected, handshake < 3 minutes |
-| Recent | 🟡 Yellow | Handshake 3-5 minutes ago |
-| Stale | 🟠 Orange | Handshake > 5 minutes ago |
-| Offline | ⚫ Gray | No recent handshake |
+| Status  | Color     | Meaning                          |
+| ------- | --------- | -------------------------------- |
+| Active  | 🟢 Green  | Connected, handshake < 3 minutes |
+| Recent  | 🟡 Yellow | Handshake 3-5 minutes ago        |
+| Stale   | 🟠 Orange | Handshake > 5 minutes ago        |
+| Offline | ⚫ Gray   | No recent handshake              |
 
 ---
 
@@ -107,12 +108,12 @@ Protect VPN access with OTP verification. If a device is lost or stolen, VPN can
 
 ### Session Status Badges
 
-| Badge | Meaning |
-|-------|---------|
-| 🔐 Setup Required | Need to configure authenticator |
-| 🔐 Inactive | 2FA configured, needs activation |
-| 🔐 Active (4h) | VPN session active for X hours |
-| No 2FA | Regular client, always active |
+| Badge             | Meaning                          |
+| ----------------- | -------------------------------- |
+| 🔐 Setup Required | Need to configure authenticator  |
+| 🔐 Inactive       | 2FA configured, needs activation |
+| 🔐 Active (4h)    | VPN session active for X hours   |
+| No 2FA            | Regular client, always active    |
 
 ### Self-Service 2FA (Per-Client)
 
@@ -160,7 +161,7 @@ Each client can have their own authenticator:
 
 ---
 
-## 5. Server Configuration
+## 6. Server Configuration
 
 Navigate to **WireGuard Server** (Config page) to configure:
 
@@ -182,40 +183,118 @@ Navigate to **WireGuard Server** (Config page) to configure:
 Advanced: Custom iptables rules for NAT/firewall.
 
 Default PostUp:
+
 ```
 iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth+ -j MASQUERADE
 ```
 
 ---
 
-## 6. Access Control (Traffic Monitor)
+## 7. Unified Monitoring
 
-Monitor traffic to specific internal servers.
+The Monitoring page consolidates three types of monitoring into one unified interface with tabs.
 
-### Adding a Server to Monitor
+### Accessing Monitoring
 
-1. Go to **Access Control** page
-2. Click **Monitor Server**
-3. Enter:
-   - **Name:** e.g., "Production DB"
-   - **IP Address:** e.g., `10.0.0.50`
-4. Click **Start Monitoring**
+1. Go to **Monitoring** in the sidebar
+2. Choose a tab: **Browser Activity**, **Network Traffic**, or **Access Logs**
 
-### Viewing Traffic Logs
+### Tab 1: Browser Activity
 
-The log shows:
-- **Client IP:** Which VPN client
-- **Target:** Server being accessed
-- **Port:** Destination port (80, 443, 5432, etc.)
-- **Hits:** Packet count
+Track browsing activity from devices with the agent installed:
+
+- **Real-time Feed** - See URLs visited in real-time
+- **Top Domains** - Most visited domains
+- **Categories** - Breakdown by category (social, video, news, etc.)
+- **Filters** - Filter by domain, category, or client
+- **Install Agent** - Button to set up tracking on devices
+
+### Tab 2: Network Traffic
+
+Monitor access to specific internal servers:
+
+1. Click **Add Server to Monitor**
+2. Enter server Name and IP address
+3. View traffic logs showing:
+   - Client IP
+   - Target server
+   - Destination port
+   - Packet count
+
+### Tab 3: Access Logs
+
+Server request logs with device fingerprinting:
+
+- **Device Info** - Browser, OS, device type
+- **Fingerprint** - Unique device identifier
+- **Request Path** - URLs accessed on the dashboard
+- **Statistics** - Top devices and request patterns
+
+**For detailed documentation, see [Activity Monitoring](./ACTIVITY_MONITORING.md)**
 
 ---
 
-## 7. Other Features
+## 8. AI Security Insights
+
+AI-powered security analysis and recommendations.
+
+### Accessing AI Insights
+
+1. Go to **AI Insights** in the sidebar
+2. Dashboard shows security analysis with auto-refresh
+
+### Security Score
+
+Overall security score (0-100) based on:
+
+- **Device Trust** - Known vs unknown devices
+- **Content Safety** - Access to blocked domains
+- **Activity Pattern** - Normal usage patterns
+- **Access Control** - IP address diversity
+
+### Anomaly Detection
+
+Automatic detection of:
+
+- High activity volume (>100 requests/hour)
+- Multiple IP addresses accessing system
+- Blocked domain access attempts
+- Late night activity (00:00-06:00)
+
+### Usage Patterns
+
+Breakdown of browsing by category:
+
+- 📱 Social, 🎬 Video, 📰 News
+- 🛒 Shopping, 💼 Work, 📧 Email
+- 🔍 Search, 🎮 Gaming, 📂 Other
+
+### Active Devices
+
+List of devices with:
+
+- Device name and fingerprint
+- Request count and last seen
+- Risk score (Low/Medium/High)
+
+### AI Recommendations
+
+Automated security suggestions for:
+
+- Activity monitoring improvements
+- Security hardening (2FA, etc.)
+- Auto-response configuration
+
+**For detailed documentation, see [AI Insights](./AI_INSIGHTS.md)**
+
+---
+
+## 9. Other Features
 
 ### VPN Connections Page
 
 Real-time view of connected clients:
+
 - Public key
 - Endpoint (client's real IP:port)
 - Data transfer (RX/TX)
@@ -231,25 +310,27 @@ Real-time view of connected clients:
 ### Wake-on-LAN
 
 Wake up devices on your network:
+
 1. Go to **WoL Hosts** page
 2. Add a host with MAC address
 3. Click **Wake** to send magic packet
 
-### Activity Monitor
+### Activity Monitoring Agent
 
-Track browsing activity dari perangkat yang terhubung VPN:
+For browser activity tracking, install the agent:
 
-1. Go to **Activity Monitor** page
-2. View real-time browsing activity feed
-3. See top domains and category breakdown
-4. Filter by domain or category
-5. Install agent on devices to start tracking
+1. Go to **Monitoring** → **Browser Activity** tab
+2. Click **Install Agent**
+3. Choose method:
+   - **Chrome Extension** (recommended, supports PIN protection)
+   - **Console Script** (temporary)
+   - **Bookmarklet** (mobile)
 
-**Untuk panduan lengkap, lihat [Activity Monitoring Documentation](./ACTIVITY_MONITORING.md)**
+**For agent setup, see [PIN-Protected Agent](./PIN_PROTECTED_AGENT.md)**
 
 ---
 
-## 8. Troubleshooting
+## 10. Troubleshooting
 
 ### Can't Connect to VPN
 
@@ -269,6 +350,7 @@ Track browsing activity dari perangkat yang terhubung VPN:
 ### Dashboard Shows "Never" for Handshake
 
 Client hasn't connected yet, or:
+
 ```bash
 # Restart dashboard
 docker restart vpn-dashboard
@@ -277,6 +359,7 @@ docker restart vpn-dashboard
 ### YouTube/Streaming Issues
 
 This is **normal VPN behavior**:
+
 - Traffic exits from server location
 - Some content may be region-restricted
 - Solution: Disable VPN for streaming, or use split tunneling
@@ -286,6 +369,7 @@ This is **normal VPN behavior**:
 ## Getting Help
 
 If you encounter issues:
+
 1. Check container logs:
    ```bash
    docker logs vpn-dashboard

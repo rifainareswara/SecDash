@@ -4,6 +4,8 @@
 
 Sistem logging aktivitas user yang menyimpan semua request ke server dengan informasi device lengkap untuk keperluan audit dan forensik.
 
+> **Note:** Access Logs sekarang terintegrasi ke halaman **Monitoring** (tab "Access Logs").
+
 ---
 
 ## Cara Kerja
@@ -214,12 +216,14 @@ curl "http://localhost:3000/api/access-logs?path=/admin"
 
 ## Frontend UI
 
-Akses halaman `/logs` untuk melihat:
+Akses halaman **Monitoring** → tab **Access Logs** untuk melihat:
 
 - Tabel access logs real-time
 - Filter by IP, Device ID, Path
 - Top devices section
 - Statistik (total requests, unique IPs, unique devices)
+
+Alternatif, data juga bisa diakses via API untuk integrasi dengan tools lain.
 
 ---
 

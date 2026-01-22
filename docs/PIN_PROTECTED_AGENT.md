@@ -70,6 +70,8 @@ Extension ada di folder: `public/agent/extension/`
 3. Klik **Load unpacked**
 4. Pilih folder `public/agent/extension`
 
+> **Tip:** Anda juga bisa mengakses instruksi instalasi dari halaman **Monitoring** → tab **Browser Activity** → klik **Install Agent**.
+
 ### Langkah 3: Konfigurasi
 
 1. Klik icon extension di toolbar

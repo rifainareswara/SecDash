@@ -44,32 +44,53 @@ SecDash/
 │   │   ├── DataTable.vue         # Client list table
 │   │   ├── StatsWidget.vue       # Dashboard stats
 │   │   ├── Sidebar.vue           # Navigation
+│   │   ├── ConfirmationModal.vue # Confirmation dialogs
 │   │   └── ...
 │   ├── composables/
-│   │   └── useWireGuard.ts       # WireGuard API composable
+│   │   ├── useWireGuard.ts       # WireGuard API composable
+│   │   └── useAuth.ts            # Authentication composable
 │   ├── pages/
 │   │   ├── index.vue             # Dashboard
 │   │   ├── users.vue             # VPN Clients
 │   │   ├── config.vue            # Server config
-│   │   ├── vpn-connections.vue   # Active connections
-│   │   └── ...
+│   │   ├── activity-monitor.vue  # Unified Monitoring (3 tabs)
+│   │   ├── ai-insights.vue       # AI Security Insights
+│   │   ├── uptime.vue            # Uptime Monitor
+│   │   ├── vpn-monitor.vue       # VPN Connections
+│   │   ├── admin.vue             # Admin Users & 2FA
+│   │   ├── status.vue            # System Status
+│   │   ├── wol.vue               # Wake-on-LAN
+│   │   └── login.vue             # Login page
 │   └── layouts/
 │       └── default.vue           # Main layout
 │
 ├── server/                       # Backend (Nitro)
 │   ├── api/                      # REST endpoints
 │   │   ├── auth/                 # Authentication
-│   │   ├── clients/              # Client CRUD
+│   │   ├── clients/              # Client CRUD & 2FA
+│   │   ├── 2fa/                  # Admin 2FA
+│   │   ├── agent-pin/            # PIN protection
+│   │   ├── access-logs/          # Server access logs
 │   │   ├── server/               # Server config
+│   │   ├── wol-hosts/            # Wake-on-LAN
+│   │   ├── activity-agent.ts     # Activity agent endpoint
+│   │   ├── activity-logs.ts      # Activity logs
 │   │   ├── status.get.ts         # Dashboard stats
+│   │   ├── monitors.ts           # Uptime monitors
 │   │   └── vpn-connections.ts    # Live data
 │   ├── plugins/
 │   │   ├── wireguard-sync.ts     # WG key/config sync
 │   │   └── vpn-monitor.ts        # Connection polling
 │   └── utils/
 │       ├── database.ts           # JSON file operations
+│       ├── accessLog.ts          # Access logging
 │       ├── vpnConnectionLog.ts   # Parse wg show
 │       └── trafficMonitor.ts     # tcpdump integration
+│
+├── public/
+│   └── agent/                    # Activity tracking agent
+│       ├── activity-tracker.js
+│       └── extension/            # Chrome extension (PIN-protected)
 │
 ├── scripts/
 │   ├── deploy.sh                 # One-click deployment
@@ -78,6 +99,11 @@ SecDash/
 │
 ├── config/                       # WireGuard (Docker volume)
 ├── wg-db/                        # Database (Docker volume)
+│   ├── clients/                  # VPN clients
+│   ├── server/                   # Server config
+│   ├── users/                    # Admin users
+│   ├── activity_logs/            # Browser activity logs
+│   └── access_logs/              # Server access logs
 ├── docker-compose.yml
 ├── Dockerfile
 └── nuxt.config.ts
@@ -95,15 +121,15 @@ Main API interface for WireGuard operations:
 
 ```typescript
 const {
-  clients,           // Reactive client list
-  stats,             // Server statistics
-  loading,           // Loading state
-  fetchClients,      // Get all clients
-  createClient,      // Create new client
-  deleteClient,      // Remove client
-  getClientConfig,   // Get QR/config
-  updateServerConfig // Update server settings
-} = useWireGuard()
+  clients, // Reactive client list
+  stats, // Server statistics
+  loading, // Loading state
+  fetchClients, // Get all clients
+  createClient, // Create new client
+  deleteClient, // Remove client
+  getClientConfig, // Get QR/config
+  updateServerConfig, // Update server settings
+} = useWireGuard();
 ```
 
 ### Backend
@@ -111,6 +137,7 @@ const {
 #### Server Plugins
 
 **`wireguard-sync.ts`**
+
 - Runs on startup
 - Syncs database keys with actual WireGuard
 - Auto-detects public IP
@@ -118,6 +145,7 @@ const {
 - Sets up routes and iptables
 
 **`vpn-monitor.ts`**
+
 - Polls `wg show` every 5 seconds
 - Updates connection logs
 - Tracks handshakes and data transfer
@@ -145,18 +173,20 @@ updateGlobalSettings(settings): WGGlobalSettings
 #### WireGuard Integration
 
 **Parse `wg show` output:**
+
 ```typescript
 // vpnConnectionLog.ts
 function parseWgShow(): Array<{
-  publicKey: string
-  endpoint: string
-  lastHandshake: Date | null
-  transferRx: number
-  transferTx: number
-}>
+  publicKey: string;
+  endpoint: string;
+  lastHandshake: Date | null;
+  transferRx: number;
+  transferTx: number;
+}>;
 ```
 
 **Runtime peer sync:**
+
 ```bash
 wg set wg0 peer "PUBLIC_KEY" allowed-ips "10.252.1.X/32"
 ```
@@ -167,30 +197,60 @@ wg set wg0 peer "PUBLIC_KEY" allowed-ips "10.252.1.X/32"
 
 ### Authentication
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/login` | Login |
-| POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/me` | Current user |
+| Method | Endpoint           | Description  |
+| ------ | ------------------ | ------------ |
+| POST   | `/api/auth/login`  | Login        |
+| POST   | `/api/auth/logout` | Logout       |
+| GET    | `/api/auth/me`     | Current user |
 
 ### Clients
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/clients` | List all clients |
-| POST | `/api/clients` | Create client |
-| GET | `/api/clients/:id` | Get client |
-| DELETE | `/api/clients/:id` | Delete client |
-| GET | `/api/clients/:id/config` | Get config + QR |
+| Method | Endpoint                      | Description        |
+| ------ | ----------------------------- | ------------------ |
+| GET    | `/api/clients`                | List all clients   |
+| POST   | `/api/clients`                | Create client      |
+| GET    | `/api/clients/:id`            | Get client         |
+| DELETE | `/api/clients/:id`            | Delete client      |
+| GET    | `/api/clients/:id/config`     | Get config + QR    |
+| POST   | `/api/clients/:id/2fa/setup`  | Setup client 2FA   |
+| POST   | `/api/clients/:id/2fa/verify` | Verify client 2FA  |
+| POST   | `/api/clients/activate`       | Activate session   |
+| POST   | `/api/clients/deactivate`     | Deactivate session |
+
+### Two-Factor Authentication
+
+| Method | Endpoint           | Description       |
+| ------ | ------------------ | ----------------- |
+| GET    | `/api/2fa/status`  | Check 2FA status  |
+| POST   | `/api/2fa/setup`   | Setup admin 2FA   |
+| POST   | `/api/2fa/verify`  | Verify admin 2FA  |
+| POST   | `/api/2fa/disable` | Disable admin 2FA |
 
 ### Server
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/status` | Dashboard stats + live data |
-| GET | `/api/server/config` | Server configuration |
-| POST | `/api/server/config` | Update configuration |
-| GET | `/api/vpn-connections` | Active connections |
+| Method | Endpoint               | Description                 |
+| ------ | ---------------------- | --------------------------- |
+| GET    | `/api/status`          | Dashboard stats + live data |
+| GET    | `/api/server/config`   | Server configuration        |
+| POST   | `/api/server/config`   | Update configuration        |
+| GET    | `/api/vpn-connections` | Active connections          |
+
+### Activity Monitoring
+
+| Method | Endpoint                 | Description             |
+| ------ | ------------------------ | ----------------------- |
+| POST   | `/api/activity-agent`    | Log activity from agent |
+| GET    | `/api/activity-logs`     | Get activity logs       |
+| GET    | `/api/access-logs`       | Get server access logs  |
+| GET    | `/api/access-logs/stats` | Get access statistics   |
+
+### Agent PIN
+
+| Method | Endpoint                | Description      |
+| ------ | ----------------------- | ---------------- |
+| POST   | `/api/agent-pin`        | Set admin PIN    |
+| GET    | `/api/agent-pin/status` | Check PIN status |
+| POST   | `/api/agent-pin/verify` | Verify PIN       |
 
 ---
 
